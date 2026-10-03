@@ -1,0 +1,94 @@
+#practice-status {
+    min-height: 20px;
+    padding: 0 28px 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--teal);
+}
+
+.btn span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+[lang="ar"] {
+    font-family: Tahoma, Arial, sans-serif;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 24px;
+    align-items: start;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e0e7e2;
+    border-radius: 26px;
+    box-shadow: 0 16px 50px #183c3510;
+    overflow: hidden;
+}
+
+.lesson-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    border-bottom: 1px solid #edf0ed;
+}
+
+.eyebrow {
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.tag {
+    background: #eff5f1;
+    color: #477265;
+    padding: 6px 10px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.question {
+    padding: 38px 28px 24px;
+    text-align: center;
+}
+
+.question-label {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+h1 {
+    margin: 19px 0 14px;
+    font-size: clamp(32px, 5vw, 48px);
+    letter-spacing: -1.8px;
+    line-height: 1.2;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+}
+
+.listen {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    border: 0;
+    background: #f0f5f2;
+    color: var(--teal);
+    padding: 9px 13px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.listen svg {
+    width: 16px;
+    height: 16px;
+}

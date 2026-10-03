@@ -1,0 +1,80 @@
+.footer {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    color: #798880;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+@media(max-width:760px) {
+    .shell {
+        width: min(100% - 32px, 540px);
+        padding-top: 24px;
+    }
+
+    .layout {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .score-card {
+        padding: 20px 24px;
+    }
+
+    #score-display {
+        margin-top: 10px;
+    }
+
+    #xp {
+        font-size: 36px;
+    }
+
+    .score-note {
+        margin-top: 10px;
+    }
+
+    .practice-label {
+        display: none;
+    }
+
+    .masthead {
+        padding-bottom: 22px;
+    }
+
+    .question {
+        padding-top: 30px;
+    }
+}
+
+@media(max-width:380px) {
+    #options-container {
+        grid-template-columns: 1fr;
+        gap: 9px;
+        padding: 8px 20px 24px;
+    }
+
+    .btn {
+        min-height: 56px;
+    }
+
+    .lesson-top {
+        padding: 18px 20px;
+    }
+
+    .footer {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    * {
+        transition: none !important;
+    }
+}

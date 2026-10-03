@@ -1,0 +1,151 @@
+.sidebar {
+    display: grid;
+    gap: 18px;
+}
+
+.score-card {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    background: linear-gradient(135deg, #193f47, #145f55);
+    border-radius: 22px;
+    padding: 26px;
+}
+
+.score-card::after {
+    content: "";
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 1px solid #ffffff18;
+    border-radius: 50%;
+    right: -65px;
+    bottom: -45px;
+    box-shadow: 0 0 0 23px #ffffff06, 0 0 0 46px #ffffff04;
+    pointer-events: none;
+}
+
+.score-card .eyebrow {
+    color: #bbd7d1;
+}
+
+#score-display {
+    margin-top: 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+#xp {
+    font-size: 48px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -2px;
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.xp-unit {
+    font-size: 13px;
+    color: #bfd8d0;
+    font-weight: 650;
+}
+
+.score-note {
+    margin: 15px 0 0;
+    font-size: 12px;
+    color: #d3e4dc;
+    line-height: 1.6;
+}
+
+.sync-box {
+    padding: 24px;
+    border: 1px solid #dce4de;
+    border-radius: 22px;
+    background: #ffffffb3;
+}
+
+.sync-title {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.sync-description {
+    margin: 8px 0 18px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.code-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    background: #f1f4ef;
+    border: 1px solid #e4e9e0;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.code-label {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.sync-code {
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
+.sync-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.sync-btn {
+    min-height: 44px;
+    padding: 10px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid #dce5de;
+    border-radius: 10px;
+    background: #f2f6f2;
+    color: var(--ink);
+}
+
+.sync-primary {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+}
+
+@media(hover:hover) {
+    .sync-primary:hover {
+        background: #0d584f;
+    }
+}
+
+#sync-status {
+    margin-top: 14px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.backup {
+    display: block;
+    width: 100%;
+    padding: 13px 0 0;
+    margin-top: 15px;
+    border: 0;
+    border-top: 1px solid var(--line);
+    background: transparent;
+    font-size: 11px;
+    color: var(--muted);
+}

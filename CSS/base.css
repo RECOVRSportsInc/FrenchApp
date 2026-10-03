@@ -1,0 +1,121 @@
+:root {
+    color-scheme: light;
+    --ink: #19343d;
+    --muted: #64767c;
+    --teal: #126b60;
+    --line: #dde5e3;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100svh;
+    color: var(--ink);
+    background: radial-gradient(ellipse at 5% 0%, #dfeee8 0%, transparent 46%), radial-gradient(ellipse at 100% 100%, #e8e5d9 0%, transparent 46%), #f6f5ef;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+summary:focus-visible {
+    outline: 3px solid #c18b38;
+    outline-offset: 4px;
+}
+
+.shell {
+    width: min(100% - 48px, 1000px);
+    margin: 0 auto;
+    padding: 36px 0 24px;
+}
+
+.masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 28px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-mark {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: var(--ink);
+    border-radius: 13px;
+    font-size: 20px;
+    font-weight: 750;
+}
+
+.brand-name {
+    font-size: 16px;
+    font-weight: 750;
+    letter-spacing: -.4px;
+}
+
+.brand-note {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.practice-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.7px;
+    color: var(--muted);
+    text-transform: uppercase;
+}
+
+.language-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding: 18px 22px;
+    border: 1px solid #dce4de;
+    border-radius: 18px;
+    background: #ffffffb3;
+}
+
+.language-field label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 650;
+    margin-bottom: 7px;
+}
+
+.language-field select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    padding: 10px;
+}
+
+select:focus-visible {
+    outline: 3px solid #c18b38;
+    outline-offset: 3px;
+}
