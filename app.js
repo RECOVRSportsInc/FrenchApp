@@ -10,7 +10,8 @@ function initApp() {
     syncBox.appendChild(statusElement);
   }
 
-  loadPersistentState();
+  try { loadPersistentState(); }
+  catch (error) { setSyncStatus(error.message); return; }
   saveLocally();
   loadNextQuestion();
 
@@ -46,4 +47,19 @@ function initApp() {
   initializeFromCloud();
 }
 
-initApp();
+// Hold one lock for the page lifetime so another tab cannot duplicate pending XP.
+if (navigator.locks && navigator.locks.request) {
+  navigator.locks.request(`${APP_PREFIX}_active_tab`, {ifAvailable: true}, async lock => {
+    appState.tabActive = Boolean(lock);
+    if (!lock) {
+      const status = document.getElementById("sync-status");
+      if (status) status.textContent = "The app is open in another tab. Close that tab, then reload this one.";
+      return;
+    }
+    initApp();
+    await new Promise(() => {});
+  }).catch(error => setSyncStatus(`Unable to start: ${error.message}`));
+} else {
+  appState.tabActive = true;
+  initApp();
+}

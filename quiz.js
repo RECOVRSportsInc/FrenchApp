@@ -72,6 +72,7 @@ function loadNextQuestion() {
 
 function checkAnswer(button, selectedOption) {
   if (
+    !appState.tabActive ||
     appState.switchingCode ||
     button.disabled ||
     button.classList.contains("wrong")
@@ -115,5 +116,5 @@ function speakWord() {
   const utterance = new SpeechSynthesisUtterance(appState.currentWord.french);
   utterance.lang = "fr-FR";
 
-  window.speechSynthesis.speak(utterance);
+  try { window.speechSynthesis.speak(utterance); } catch (error) { console.warn("Pronunciation unavailable:", error.message); }
 }

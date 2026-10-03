@@ -34,16 +34,18 @@
       <div class="sync-title">CLOUD SYNC CODE</div>
       <div class="sync-code" id="sync-code-display">----</div>
       <div class="sync-actions">
-        <button class="sync-btn" onclick="uploadProgress()">Push Save</button>
+        <button class="sync-btn" onclick="uploadProgress()">Sync Now</button>
         <button class="sync-btn" onclick="promptSyncCode()">Enter Code</button>
       </div>
+      <div id="sync-status" role="status" aria-live="polite" style="margin-top:10px;font-size:0.8rem;color:#777;line-height:1.4;"></div>
+      <button class="sync-btn" style="margin-top:10px" onclick="exportProgress()">Export Backup</button>
     </div>
   </div>
 
-  <script src="words.js"></script>
-  <script src="state.js"></script>
-  <script src="quiz.js"></script>
-  <script src="sync.js"></script>
-  <script src="app.js"></script>
+  <script src="words.js?v=20261003-1"></script>
+  <script src="state.js?v=20261003-1"></script>
+  <script src="quiz.js?v=20261003-1"></script>
+  <script src="sync.js?v=20261003-1"></script>
+  <script src="app.js?v=20261003-1"></script>
 </body>
 </html>

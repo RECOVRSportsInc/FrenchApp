@@ -22,9 +22,9 @@ async function requestCloud(url) {
     try {
       data = JSON.parse(body);
     } catch {
-      throw new Error(
-        `HTTP ${response.status}: the server returned a non-JSON response.`
-      );
+      const error = new Error(`HTTP ${response.status}: the server returned a non-JSON response.`);
+      error.status = response.status;
+      throw error;
     }
 
     if (!response.ok || data.error) {
@@ -91,39 +91,41 @@ async function saveToCloud(code, value) {
 }
 
 async function performSync() {
+  if (!appState.tabActive) return;
+  if (!appState.storageAvailable) throw new Error("Device storage is unavailable; export a backup first.");
   setSyncStatus("Syncing…");
-
-  do {
-    const changeToSave = appState.pendingXP;
-    const localXPAtStart = appState.xp;
-    let cloudXP;
-    let missingSave = false;
-
-    try {
-      cloudXP = await getCloudXP(appState.syncCode);
-    } catch (error) {
-      if (error.status !== 404) {
-        throw error;
-      }
-
-      missingSave = true;
+  const code = appState.syncCode;
+  let cloudXP;
+  let missing = false;
+  try { cloudXP = await getCloudXP(code); }
+  catch (error) { if (error.status !== 404) throw error; missing = true; }
+  // Never blindly repeat a write after a timeout or reload.
+  if (appState.writeIntent) {
+    const intent = appState.writeIntent;
+    if (missing || cloudXP !== intent.target) {
+      throw new Error("An interrupted save needs checking. Export a backup. Automatic writes are paused to avoid counting XP twice.");
     }
-
-    const targetXP = missingSave
-      ? localXPAtStart
-      : Math.max(0, cloudXP + changeToSave);
-
-    if (missingSave || changeToSave !== 0) {
-      await saveToCloud(appState.syncCode, targetXP);
-    }
-
-    appState.pendingXP -= changeToSave;
-    appState.xp = Math.max(0, targetXP + appState.pendingXP);
-
+    appState.pendingXP -= intent.delta;
+    appState.writeIntent = null;
+    appState.xp = Math.max(0, cloudXP + appState.pendingXP);
     saveLocally();
-  } while (appState.pendingXP !== 0);
-
-  setSyncStatus("Progress synced");
+  }
+  const delta = appState.pendingXP;
+  const target = missing ? appState.xp : Math.max(0, cloudXP + delta);
+  if (!Number.isSafeInteger(target)) throw new Error("XP exceeds the supported limit.");
+  if (missing || delta !== 0) {
+    appState.writeIntent = {target, delta};
+    saveLocally();
+    if (!appState.storageAvailable) throw new Error("Unable to save recovery data on this device.");
+    await saveToCloud(code, target);
+    appState.pendingXP -= delta;
+    appState.writeIntent = null;
+  }
+  appState.xp = Math.max(0, target + appState.pendingXP);
+  saveLocally();
+  appState.failures = 0;
+  appState.retryAfter = 0;
+  setSyncStatus(appState.pendingXP ? "Progress saved on this device. Sync pending." : "Progress synced");
 }
 
 function syncProgress() {
@@ -133,7 +135,9 @@ function syncProgress() {
 
   appState.syncTask = performSync()
     .catch(error => {
-      setSyncStatus("Sync unavailable. Progress saved on this device.");
+      appState.failures++;
+      appState.retryAfter = Date.now() + Math.min(120000, 5000 * 2 ** Math.min(appState.failures, 5));
+      setSyncStatus(appState.storageAvailable ? `Sync paused: ${error.message} Progress is saved on this device.` : "Device storage unavailable. Export a backup.");
       throw error;
     })
     .finally(() => {
@@ -144,7 +148,7 @@ function syncProgress() {
 }
 
 async function autoSyncToCloud() {
-  if (appState.switchingCode) {
+  if (!appState.tabActive || appState.switchingCode || navigator.onLine === false || Date.now() < appState.retryAfter) {
     return;
   }
 
@@ -156,7 +160,7 @@ async function autoSyncToCloud() {
 }
 
 async function uploadProgress() {
-  if (appState.uploadInProgress || appState.switchingCode) {
+  if (!appState.tabActive || appState.uploadInProgress || appState.switchingCode) {
     return;
   }
 
@@ -179,7 +183,7 @@ async function uploadProgress() {
 }
 
 async function promptSyncCode() {
-  if (appState.switchingCode || appState.uploadInProgress) {
+  if (!appState.tabActive || appState.switchingCode || appState.uploadInProgress) {
     return;
   }
 
@@ -205,14 +209,16 @@ async function promptSyncCode() {
       await appState.syncTask;
     }
 
-    if (appState.pendingXP !== 0) {
+    if (appState.pendingXP !== 0 || appState.writeIntent) {
       await syncProgress();
     }
 
     const fetchedXP = await getCloudXP(cleanCode);
 
+    const record = readRecord(cleanCode);
     appState.syncCode = cleanCode;
-    appState.pendingXP = readPendingXP();
+    appState.pendingXP = record ? record.pendingXP : readPendingXP();
+    appState.writeIntent = record ? record.writeIntent || null : null;
     appState.xp = Math.max(0, fetchedXP + appState.pendingXP);
 
     saveLocally();
