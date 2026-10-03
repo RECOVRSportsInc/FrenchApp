@@ -3,8 +3,8 @@ let previousWord = "";
 let xp = localStorage.getItem('frenchXP') ? parseInt(localStorage.getItem('frenchXP')) : 0;
 let syncCode = localStorage.getItem('frenchSyncCode') || generateSyncCode();
 
-// Namespace for your app on CounterAPI
-const APP_NAMESPACE = "frenchfasttrack_v1";
+// Unique prefix for your app sync keys
+const APP_PREFIX = "frenchfasttrack_v2";
 
 document.getElementById('xp').innerText = xp;
 document.getElementById('sync-code-display').innerText = syncCode;
@@ -83,20 +83,11 @@ function speakWord() {
   }
 }
 
-// Cloud Sync Engine with Auto-Creation and CORS Bypass
+// Cloud Sync via open CountAPI
 async function saveToCloud(codeToSave, xpToSave) {
-  const key = `code_${codeToSave}`;
-  
-  // Try setting value
-  let setRes = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}/set?count=${xpToSave}`);
-  
-  // If counter doesn't exist yet (404), auto-create it first, then set count
-  if (setRes.status === 404) {
-    await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}/create?initial_value=${xpToSave}`);
-    setRes = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}/set?count=${xpToSave}`);
-  }
-  
-  return setRes.ok;
+  const key = `${APP_PREFIX}_${codeToSave}`;
+  const response = await fetch(`https://countapi.mileshilliard.com/api/v1/set/${key}?value=${xpToSave}`);
+  return response.ok;
 }
 
 async function uploadProgress() {
@@ -105,7 +96,7 @@ async function uploadProgress() {
     if (success) {
       alert(`Progress saved to cloud under code: ${syncCode}`);
     } else {
-      alert(`Save failed. Code: ${syncCode}`);
+      alert(`Save failed for code: ${syncCode}`);
     }
   } catch (error) {
     alert("Cloud save error: " + error.message);
@@ -128,20 +119,20 @@ async function promptSyncCode() {
   }
 
   const cleanCode = enteredCode.trim();
-  const key = `code_${cleanCode}`;
+  const key = `${APP_PREFIX}_${cleanCode}`;
   
   try {
-    let response = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}`);
-    
-    if (response.status === 404) {
+    const response = await fetch(`https://countapi.mileshilliard.com/api/v1/get/${key}`);
+    if (!response.ok) {
       alert("No cloud save found for code: " + cleanCode);
       return;
     }
 
     const data = await response.json();
+    const fetchedXP = parseInt(data.value);
 
-    if (data && typeof data.count === 'number') {
-      xp = data.count;
+    if (!isNaN(fetchedXP)) {
+      xp = fetchedXP;
       syncCode = cleanCode;
 
       localStorage.setItem('frenchXP', xp);
