@@ -3,7 +3,7 @@ let previousWord = "";
 let xp = localStorage.getItem('frenchXP') ? parseInt(localStorage.getItem('frenchXP')) : 0;
 let syncCode = localStorage.getItem('frenchSyncCode') || generateSyncCode();
 
-// Unique bucket name for your app on KVdb
+// Unique bucket name for your app on KVdb TEST
 const KVDB_BUCKET = "FrenchApp_Sync_v1";
 
 document.getElementById('xp').innerText = xp;
