@@ -68,6 +68,7 @@ function loadNextQuestion() {
     size.textContent = `${words.length} words`;
   }
 
+  renderWordProgress();
   speakWord();
 }
 
@@ -86,8 +87,11 @@ function checkAnswer(
   }
 
   const previousXP = appState.xp;
+  const correct = selectedOption === appState.currentWord.answer;
 
-  if (selectedOption === appState.currentWord.answer) {
+  recordWordAnswer(appState.currentWord, correct);
+
+  if (correct) {
     button.classList.add("correct");
     appState.xp += 10;
 

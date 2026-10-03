@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/answers.css?v=20261003-4">
     <link rel="stylesheet" href="css/progress.css?v=20261003-4">
     <link rel="stylesheet" href="css/responsive.css?v=20261003-4">
+    <link rel="stylesheet" href="css/word-progress.css?v=20261003-5">
 </head>
 
 <body>
@@ -101,6 +102,46 @@
             </aside>
         </main>
 
+        <section class="history-panel" aria-label="Word progress">
+            <div class="history-heading">
+                <h2>Your word progress</h2>
+                <span class="tag" id="history-pair">French → English</span>
+            </div>
+            <div class="history-summary" aria-live="polite">
+                <div class="history-stat">
+                    <strong id="words-practised">0</strong>
+                    <span>Words practised</span>
+                </div>
+                <div class="history-stat">
+                    <strong id="word-correct-total">0</strong>
+                    <span>Correct answers</span>
+                </div>
+                <div class="history-stat">
+                    <strong id="word-mistake-total">0</strong>
+                    <span>Mistakes</span>
+                </div>
+            </div>
+            <p id="history-status">Word history is saved on this device.</p>
+            <details>
+                <summary>View word history</summary>
+                <p id="history-empty">Answer a question to start your word history.</p>
+                <div class="history-scroll">
+                    <table class="history-table" id="word-history-table" hidden>
+                        <caption class="eyebrow">Practice history for this language pair</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Word</th>
+                                <th scope="col">Correct</th>
+                                <th scope="col">Mistakes</th>
+                                <th scope="col">Last practised</th>
+                            </tr>
+                        </thead>
+                        <tbody id="word-history-body"></tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+
         <footer class="footer">
             <span>Small steps. Steady progress.</span>
             <span>Language Fast-Track</span>
@@ -109,11 +150,13 @@
 
     <script src="words.js?v=20261003-3"></script>
     <script src="languages.js?v=20261003-3"></script>
-    <script src="state.js?v=20261003-3"></script>
+    <script src="state.js?v=20261003-5"></script>
     <script src="language-controls.js?v=20261003-3"></script>
-    <script src="vocabulary.js?v=20261003-3"></script>
+    <script src="vocabulary.js?v=20261003-5"></script>
+    <script src="word-progress.js?v=20261003-5"></script>
+    <script src="progress-ui.js?v=20261003-5"></script>
     <script src="speech.js?v=20261003-3"></script>
-    <script src="quiz.js?v=20261003-3"></script>
+    <script src="quiz.js?v=20261003-5"></script>
     <script src="cloud-api.js?v=20261003-3"></script>
     <script src="sync.js?v=20261003-3"></script>
     <script src="sync-controls.js?v=20261003-3"></script>

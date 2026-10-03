@@ -39,15 +39,21 @@ function getActiveWords() {
     answerLanguage === "en" &&
     typeof frenchWords !== "undefined"
   ) {
-    return [
-      ...frenchWords.map((word, i) => ({
-        id: `original-fr-${i}`,
+    const originalWords = frenchWords.map(word => {
+      const stableName = word.french
+        .normalize("NFC")
+        .trim()
+        .toLowerCase();
+
+      return {
+        id: `original-fr-${encodeURIComponent(stableName)}`,
         text: word.french,
         answer: word.english,
         options: word.options
-      })),
-      ...translated
-    ];
+      };
+    });
+
+    return [...originalWords, ...translated];
   }
 
   return translated;
