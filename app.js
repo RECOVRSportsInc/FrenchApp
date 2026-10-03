@@ -1,43 +1,90 @@
+const APP_PREFIX = "frenchfasttrack_v2";
+const API_BASE = "https://countapi.mileshilliard.com/api/v1";
+
 let currentWord = {};
 let previousWord = "";
-let xp = localStorage.getItem('frenchXP') ? parseInt(localStorage.getItem('frenchXP')) : 0;
-let syncCode = localStorage.getItem('frenchSyncCode') || generateSyncCode();
+let saveQueue = Promise.resolve();
+let uploadInProgress = false;
 
-// Unique prefix for your app sync keys
-const APP_PREFIX = "frenchfasttrack_v2";
+const storedXP = Number(localStorage.getItem("frenchXP"));
+let xp = Number.isSafeInteger(storedXP) && storedXP >= 0
+  ? storedXP
+  : 0;
 
-document.getElementById('xp').innerText = xp;
-document.getElementById('sync-code-display').innerText = syncCode;
+let syncCode =
+  localStorage.getItem("frenchSyncCode") || generateSyncCode();
+
+document.getElementById("xp").innerText = xp;
+document.getElementById("sync-code-display").innerText = syncCode;
 
 function generateSyncCode() {
   const code = Math.floor(1000 + Math.random() * 9000).toString();
-  localStorage.setItem('frenchSyncCode', code);
+  localStorage.setItem("frenchSyncCode", code);
   return code;
 }
 
-function loadNextQuestion() {
-  let newWord;
-  
-  // Prevent repeating the same word back-to-back
-  do {
-    newWord = frenchWords[Math.floor(Math.random() * frenchWords.length)];
-  } while (newWord.french === previousWord && frenchWords.length > 1);
+function saveLocally() {
+  localStorage.setItem("frenchXP", String(xp));
+  localStorage.setItem("frenchSyncCode", syncCode);
 
-  currentWord = newWord;
+  document.getElementById("xp").innerText = xp;
+  document.getElementById("sync-code-display").innerText = syncCode;
+}
+
+function shuffleOptions(options) {
+  const shuffled = [...options];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
+}
+
+function loadNextQuestion() {
+  if (
+    typeof frenchWords === "undefined" ||
+    !Array.isArray(frenchWords) ||
+    frenchWords.length === 0
+  ) {
+    document.getElementById("word-display").innerText =
+      "No words available";
+
+    console.error(
+      "words.js must define a non-empty array named frenchWords."
+    );
+    return;
+  }
+
+  const alternatives = frenchWords.filter(
+    word => word.french !== previousWord
+  );
+
+  const availableWords =
+    alternatives.length > 0 ? alternatives : frenchWords;
+
+  currentWord =
+    availableWords[Math.floor(Math.random() * availableWords.length)];
+
   previousWord = currentWord.french;
 
-  document.getElementById('word-display').innerText = currentWord.french;
-  const optionsContainer = document.getElementById('options-container');
-  optionsContainer.innerHTML = '';
+  document.getElementById("word-display").innerText =
+    currentWord.french;
 
-  // Shuffle options
-  const shuffledOptions = [...currentWord.options].sort(() => Math.random() - 0.5);
+  const optionsContainer =
+    document.getElementById("options-container");
 
-  shuffledOptions.forEach(option => {
-    const button = document.createElement('button');
-    button.className = 'btn';
+  optionsContainer.innerHTML = "";
+
+  shuffleOptions(currentWord.options).forEach(option => {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "btn";
     button.innerText = option;
     button.onclick = () => checkAnswer(button, option);
+
     optionsContainer.appendChild(button);
   });
 
@@ -45,110 +92,219 @@ function loadNextQuestion() {
 }
 
 function checkAnswer(button, selectedOption) {
-  if (button.classList.contains('wrong') || button.disabled) return;
+  if (button.disabled || button.classList.contains("wrong")) {
+    return;
+  }
 
   if (selectedOption === currentWord.english) {
-    button.classList.add('correct');
-    
-    // Reward: +10 XP
+    button.classList.add("correct");
     xp += 10;
-    localStorage.setItem('frenchXP', xp);
-    document.getElementById('xp').innerText = xp;
 
-    const allButtons = document.querySelectorAll('.btn');
-    allButtons.forEach(btn => btn.disabled = true);
+    document
+      .querySelectorAll("#options-container .btn")
+      .forEach(btn => {
+        btn.disabled = true;
+      });
 
+    saveLocally();
     autoSyncToCloud();
-    setTimeout(loadNextQuestion, 1000);
 
+    setTimeout(loadNextQuestion, 1000);
   } else {
-    button.classList.add('wrong');
+    button.classList.add("wrong");
     button.disabled = true;
 
-    // Penalty: -5 XP (Minimum XP is 0)
     xp = Math.max(0, xp - 5);
-    localStorage.setItem('frenchXP', xp);
-    document.getElementById('xp').innerText = xp;
 
+    saveLocally();
     autoSyncToCloud();
   }
 }
 
 function speakWord() {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(currentWord.french);
-    utterance.lang = 'fr-FR';
-    window.speechSynthesis.speak(utterance);
+  if (!("speechSynthesis" in window) || !currentWord.french) {
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const utterance =
+    new SpeechSynthesisUtterance(currentWord.french);
+
+  utterance.lang = "fr-FR";
+  window.speechSynthesis.speak(utterance);
+}
+
+async function requestCloud(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      signal: controller.signal
+    });
+
+    const body = await response.text();
+    let data;
+
+    try {
+      data = JSON.parse(body);
+    } catch {
+      throw new Error(
+        `HTTP ${response.status}: the server returned a non-JSON response.`
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}: ` +
+        (data.error || data.message || "Cloud request failed.")
+      );
+    }
+
+    if (data.error) {
+      throw new Error(String(data.error));
+    }
+
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(
+        "The cloud service did not respond within 15 seconds."
+      );
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
-// Cloud Sync via open CountAPI
+function parseCloudXP(value) {
+  if (
+    value === undefined ||
+    value === null ||
+    !["number", "string"].includes(typeof value) ||
+    String(value).trim() === ""
+  ) {
+    throw new Error("The cloud service returned an invalid XP value.");
+  }
+
+  const parsedXP = Number(value);
+
+  if (!Number.isSafeInteger(parsedXP) || parsedXP < 0) {
+    throw new Error("The cloud service returned an invalid XP value.");
+  }
+
+  return parsedXP;
+}
+
 async function saveToCloud(codeToSave, xpToSave) {
-  const key = `${APP_PREFIX}_${codeToSave}`;
-  const response = await fetch(`https://countapi.mileshilliard.com/api/v1/set/${key}?value=${xpToSave}`);
-  return response.ok;
+  if (!Number.isSafeInteger(xpToSave) || xpToSave < 0) {
+    throw new Error("XP must be a valid non-negative integer.");
+  }
+
+  const key =
+    encodeURIComponent(`${APP_PREFIX}_${codeToSave}`);
+
+  const data = await requestCloud(
+    `${API_BASE}/set/${key}?value=${xpToSave}`
+  );
+
+  if (parseCloudXP(data.value) !== xpToSave) {
+    throw new Error(
+      "The server did not confirm the expected XP value."
+    );
+  }
+
+  return true;
+}
+
+// Send saves in order so an older request cannot finish after a newer one.
+function queueCloudSave(codeToSave, xpToSave) {
+  const pendingSave = saveQueue.then(() =>
+    saveToCloud(codeToSave, xpToSave)
+  );
+
+  // A failed request must not block subsequent saves.
+  saveQueue = pendingSave.catch(() => {});
+
+  return pendingSave;
 }
 
 async function uploadProgress() {
+  if (uploadInProgress) {
+    return;
+  }
+
+  uploadInProgress = true;
+
+  const codeToSave = syncCode;
+  const xpToSave = xp;
+
   try {
-    const success = await saveToCloud(syncCode, xp);
-    if (success) {
-      alert(`Progress saved to cloud under code: ${syncCode}`);
-    } else {
-      alert(`Save failed for code: ${syncCode}`);
-    }
+    await queueCloudSave(codeToSave, xpToSave);
+
+    alert(
+      `Progress saved: ${xpToSave} XP under code ${codeToSave}`
+    );
   } catch (error) {
-    alert("Cloud save error: " + error.message);
+    console.error("Cloud save failed:", error);
+
+    alert(
+      `Cloud save failed: ${error.message}\n\n` +
+      "Your XP is still saved on this device."
+    );
+  } finally {
+    uploadInProgress = false;
   }
 }
 
 async function autoSyncToCloud() {
   try {
-    await saveToCloud(syncCode, xp);
-  } catch (e) {
-    // Silent fail on background auto-sync
+    await queueCloudSave(syncCode, xp);
+  } catch (error) {
+    console.warn("Automatic cloud save failed:", error.message);
   }
 }
 
 async function promptSyncCode() {
-  const enteredCode = prompt("Enter your 4-digit Sync Code from your other device:");
-  if (!enteredCode || enteredCode.trim().length !== 4) {
-    if (enteredCode) alert("Please enter a valid 4-digit code.");
+  const enteredCode = prompt(
+    "Enter your 4-digit Sync Code from your other device:"
+  );
+
+  if (enteredCode === null) {
     return;
   }
 
   const cleanCode = enteredCode.trim();
-  const key = `${APP_PREFIX}_${cleanCode}`;
-  
+
+  if (!/^\d{4}$/.test(cleanCode)) {
+    alert("Please enter a valid 4-digit code.");
+    return;
+  }
+
+  const key =
+    encodeURIComponent(`${APP_PREFIX}_${cleanCode}`);
+
   try {
-    const response = await fetch(`https://countapi.mileshilliard.com/api/v1/get/${key}`);
-    if (!response.ok) {
-      alert("No cloud save found for code: " + cleanCode);
-      return;
-    }
+    const data = await requestCloud(`${API_BASE}/get/${key}`);
+    const fetchedXP = parseCloudXP(data.value);
 
-    const data = await response.json();
-    const fetchedXP = parseInt(data.value);
+    xp = fetchedXP;
+    syncCode = cleanCode;
 
-    if (!isNaN(fetchedXP)) {
-      xp = fetchedXP;
-      syncCode = cleanCode;
+    saveLocally();
 
-      localStorage.setItem('frenchXP', xp);
-      localStorage.setItem('frenchSyncCode', syncCode);
-
-      document.getElementById('xp').innerText = xp;
-      document.getElementById('sync-code-display').innerText = syncCode;
-
-      alert(`Successfully loaded ${xp} XP from code ${syncCode}!`);
-    } else {
-      alert("No cloud save found for code: " + cleanCode);
-    }
+    alert(
+      `Successfully loaded ${xp} XP from code ${syncCode}!`
+    );
   } catch (error) {
-    alert("Error fetching sync data: " + error.message);
+    console.error("Cloud load failed:", error);
+
+    alert(`Could not load cloud progress: ${error.message}`);
   }
 }
 
-// Initialize on page load
 loadNextQuestion();
