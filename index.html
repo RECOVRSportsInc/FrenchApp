@@ -3,45 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#163b42">
   <title>French Fast-Track</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f7f9fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-    .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 400px; }
-    h1 { color: #3c3c3c; font-size: 2.2rem; margin-bottom: 25px; cursor: pointer; word-wrap: break-word; }
-    .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 1.1rem; font-weight: bold; color: #4b4b4b; background-color: #ffffff; border: 2px solid #e5e5e5; border-radius: 12px; cursor: pointer; transition: 0.1s; }
-    .btn:hover { background-color: #f0f0f0; }
-    .btn:active { transform: translateY(2px); }
-    .correct { background-color: #d7ffb8 !important; border-color: #58cc02 !important; color: #58cc02 !important; }
-    .wrong { background-color: #ffdfe0 !important; border-color: #ff4b4b !important; color: #ff4b4b !important; }
-    #score-display { margin-top: 15px; font-weight: bold; color: #afafaf; font-size: 1.1rem; }
-    
-    .sync-box { margin-top: 25px; padding-top: 15px; border-top: 2px dashed #f0f0f0; }
-    .sync-title { font-size: 0.85rem; color: #888; margin-bottom: 8px; font-weight: bold; }
-    .sync-code { font-size: 1.2rem; font-weight: bold; color: #58cc02; letter-spacing: 2px; }
-    .sync-actions { display: flex; gap: 8px; margin-top: 10px; }
-    .sync-btn { flex: 1; padding: 8px; font-size: 0.85rem; font-weight: bold; color: #666; background: #f0f0f0; border: none; border-radius: 8px; cursor: pointer; }
-    .sync-btn:hover { background: #e0e0e0; }
+    :root { color-scheme: light; --ink:#19343d; --muted:#64767c; --teal:#126b60; --line:#dde5e3; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; min-height:100svh; color:var(--ink); background:radial-gradient(ellipse at 5% 0%,#dfeee8 0%,transparent 46%),radial-gradient(ellipse at 100% 100%,#e8e5d9 0%,transparent 46%),#f6f5ef; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased; }
+    button { font:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    button:focus-visible, summary:focus-visible { outline:3px solid #c18b38; outline-offset:4px; }
+    .shell { width:min(100% - 48px,1000px); margin:0 auto; padding:36px 0 24px; }
+    .masthead { display:flex; justify-content:space-between; align-items:center; gap:20px; padding-bottom:28px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand-mark { width:42px; height:42px; display:grid; place-items:center; color:#fff; background:var(--ink); border-radius:13px; font-size:20px; font-weight:750; }
+    .brand-name { font-size:16px; font-weight:750; letter-spacing:-.4px; }
+    .brand-note { margin-top:4px; color:var(--muted); font-size:12px; }
+    .practice-label { font-size:11px; font-weight:700; letter-spacing:1.7px; color:var(--muted); text-transform:uppercase; }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:24px; align-items:start; }
+    .card { background:#fff; border:1px solid #e0e7e2; border-radius:26px; box-shadow:0 16px 50px #183c3510; overflow:hidden; }
+    .lesson-top { display:flex; justify-content:space-between; align-items:center; padding:22px 28px; border-bottom:1px solid #edf0ed; }
+    .eyebrow { font-size:10px; font-weight:750; letter-spacing:1.8px; text-transform:uppercase; color:var(--muted); }
+    .tag { background:#eff5f1; color:#477265; padding:6px 10px; border-radius:30px; font-size:11px; font-weight:650; }
+    .question { padding:38px 28px 24px; text-align:center; }
+    .question-label { margin:0; font-size:13px; color:var(--muted); }
+    h1 { margin:19px 0 14px; font-size:clamp(32px,5vw,48px); letter-spacing:-1.8px; line-height:1.2; font-weight:750; overflow-wrap:anywhere; }
+    .listen { display:inline-flex; gap:8px; align-items:center; border:0; background:#f0f5f2; color:var(--teal); padding:9px 13px; border-radius:30px; font-size:12px; font-weight:650; }
+    .listen svg { width:16px; height:16px; }
+    #options-container { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:8px 28px 28px; counter-reset:answer; }
+    .btn { counter-increment:answer; display:flex; align-items:center; text-align:left; gap:12px; width:100%; min-height:72px; padding:15px; border:1.5px solid var(--line); border-radius:14px; color:var(--ink); background:#fff; font-size:14px; font-weight:600; line-height:1.4; transition:background .15s,border-color .15s,transform .15s; }
+    .btn::before { content:counter(answer,upper-alpha); flex-shrink:0; display:grid; place-items:center; width:28px; height:28px; border-radius:8px; background:#f2f4f2; color:#7c8b8b; font-size:11px; font-weight:700; }
+    @media(hover:hover) { .btn:hover:not(:disabled) { border-color:#77a598; background:#f6faf7; transform:translateY(-2px); } .sync-btn:hover { background:#e7eeea; } .listen:hover { background:#e4eee7; } }
+    .btn:active:not(:disabled) { transform:translateY(1px); }
+    .btn:disabled { cursor:default; }
+    .correct { background:#e3f3e9 !important; border-color:#4e9571 !important; color:#205c3f !important; }
+    .correct::before { content:"✓"; background:#2d7952; color:#fff; }
+    .wrong { background:#fff0ed !important; border-color:#ce8275 !important; color:#984a3f !important; }
+    .wrong::before { content:"×"; background:#b65e50; color:#fff; font-size:18px; }
+    .lesson-foot { padding:17px 28px; border-top:1px solid #edf0ed; background:#fafbf8; font-size:11px; text-align:center; color:var(--muted); line-height:1.6; }
+    .sidebar { display:grid; gap:18px; }
+    .score-card { position:relative; overflow:hidden; color:#fff; background:linear-gradient(135deg,#193f47,#145f55); border-radius:22px; padding:26px; }
+    .score-card::after { content:""; position:absolute; width:150px; height:150px; border:1px solid #ffffff18; border-radius:50%; right:-65px; bottom:-45px; box-shadow:0 0 0 23px #ffffff06,0 0 0 46px #ffffff04; pointer-events:none; }
+    .score-card .eyebrow { color:#bbd7d1; }
+    #score-display { margin-top:14px; display:flex; align-items:baseline; gap:8px; }
+    #xp { font-size:48px; line-height:1; font-weight:700; letter-spacing:-2px; overflow-wrap:anywhere; min-width:0; }
+    .xp-unit { font-size:13px; color:#bfd8d0; font-weight:650; }
+    .score-note { margin:15px 0 0; font-size:12px; color:#d3e4dc; line-height:1.6; }
+    .sync-box { padding:24px; border:1px solid #dce4de; border-radius:22px; background:#ffffffb3; }
+    .sync-title { font-weight:700; font-size:14px; }
+    .sync-description { margin:8px 0 18px; font-size:12px; color:var(--muted); line-height:1.7; }
+    .code-row { display:flex; justify-content:space-between; gap:10px; align-items:center; background:#f1f4ef; border:1px solid #e4e9e0; border-radius:12px; padding:12px 14px; }
+    .code-label { font-size:11px; color:var(--muted); }
+    .sync-code { font-size:19px; font-weight:750; letter-spacing:3px; font-variant-numeric:tabular-nums; }
+    .sync-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
+    .sync-btn { min-height:44px; padding:10px 8px; font-size:11px; font-weight:700; border:1px solid #dce5de; border-radius:10px; background:#f2f6f2; color:var(--ink); }
+    .sync-primary { background:var(--teal); border-color:var(--teal); color:#fff; }
+    @media(hover:hover) { .sync-primary:hover { background:#0d584f; } }
+    #sync-status { margin-top:14px; font-size:11px; color:var(--muted); line-height:1.7; overflow-wrap:anywhere; }
+    .backup { display:block; width:100%; padding:13px 0 0; margin-top:15px; border:0; border-top:1px solid var(--line); background:transparent; font-size:11px; color:var(--muted); }
+    .footer { margin-top:24px; display:flex; justify-content:space-between; gap:16px; color:#798880; font-size:11px; line-height:1.5; }
+    @media(max-width:760px) { .shell { width:min(100% - 32px,540px); padding-top:24px; } .layout { grid-template-columns:1fr; gap:18px; } .sidebar { grid-template-columns:1fr; } .score-card { padding:20px 24px; } #score-display { margin-top:10px; } #xp { font-size:36px; } .score-note { margin-top:10px; } .practice-label { display:none; } .masthead { padding-bottom:22px; } .question { padding-top:30px; } }
+    @media(max-width:380px) { #options-container { grid-template-columns:1fr; gap:9px; padding:8px 20px 24px; } .btn { min-height:56px; } .lesson-top { padding:18px 20px; } .footer { flex-direction:column; gap:5px; } }
+    @media(prefers-reduced-motion:reduce) { * { transition:none !important; } }
   </style>
 </head>
 <body>
-
-  <div class="card">
-    <h1 id="word-display" onclick="speakWord()">Word</h1>
-    <div id="options-container"></div>
-    <div id="score-display">XP: <span id="xp">0</span></div>
-
-    <div class="sync-box">
-      <div class="sync-title">CLOUD SYNC CODE</div>
-      <div class="sync-code" id="sync-code-display">----</div>
-      <div class="sync-actions">
-        <button class="sync-btn" onclick="uploadProgress()">Sync Now</button>
-        <button class="sync-btn" onclick="promptSyncCode()">Enter Code</button>
-      </div>
-      <div id="sync-status" role="status" aria-live="polite" style="margin-top:10px;font-size:0.8rem;color:#777;line-height:1.4;"></div>
-      <button class="sync-btn" style="margin-top:10px" onclick="exportProgress()">Export Backup</button>
-    </div>
+  <div class="shell">
+    <header class="masthead">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">f.</div><div><div class="brand-name">French Fast-Track</div><div class="brand-note">A little practice. More confidence.</div></div></div>
+      <span class="practice-label">Vocabulary practice</span>
+    </header>
+    <main class="layout">
+      <section class="card" aria-label="Vocabulary question">
+        <div class="lesson-top"><span class="eyebrow">French → English</span><span class="tag">Vocabulary</span></div>
+        <div class="question">
+          <p class="question-label">Choose the English meaning</p>
+          <h1 id="word-display" aria-live="polite">Word</h1>
+          <button class="listen" type="button" onclick="speakWord()" aria-label="Listen to the French pronunciation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>Listen</button>
+        </div>
+        <div id="options-container" role="group" aria-label="English answer choices"></div>
+        <div class="lesson-foot">Correct answer +10 XP <span aria-hidden="true">&nbsp; · &nbsp;</span> Incorrect answer −5 XP</div>
+      </section>
+      <aside class="sidebar" aria-label="Progress and device sync">
+        <section class="score-card" aria-label="Your experience points"><div class="eyebrow">Your progress</div><div id="score-display"><span id="xp">0</span><span class="xp-unit">XP</span></div><p class="score-note">Build your vocabulary,<br>one word at a time.</p></section>
+        <section class="sync-box" aria-label="Sync progress">
+          <div class="sync-title">Pick up where you left off</div>
+          <p class="sync-description">Use the same code on your phone and computer to connect your progress.</p>
+          <div class="code-row"><span class="code-label">Your sync code</span><span class="sync-code" id="sync-code-display">----</span></div>
+          <div class="sync-actions"><button type="button" class="sync-btn sync-primary" onclick="uploadProgress()">Sync now</button><button type="button" class="sync-btn" onclick="promptSyncCode()">Enter code</button></div>
+          <div id="sync-status" role="status" aria-live="polite">Connecting…</div>
+          <button type="button" class="backup" onclick="exportProgress()">Download progress backup</button>
+        </section>
+      </aside>
+    </main>
+    <footer class="footer"><span>Small steps. Steady progress.</span><span>French Fast-Track</span></footer>
   </div>
-
   <script src="words.js?v=20261003-1"></script>
   <script src="state.js?v=20261003-1"></script>
   <script src="quiz.js?v=20261003-1"></script>
