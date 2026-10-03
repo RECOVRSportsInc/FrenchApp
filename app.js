@@ -3,8 +3,8 @@ let previousWord = "";
 let xp = localStorage.getItem('frenchXP') ? parseInt(localStorage.getItem('frenchXP')) : 0;
 let syncCode = localStorage.getItem('frenchSyncCode') || generateSyncCode();
 
-// Unique bucket name for your app on KVdb TEST
-const KVDB_BUCKET = "FrenchApp_Sync_v1";
+// Namespace for your app on CounterAPI
+const APP_NAMESPACE = "frenchfasttrack_v1";
 
 document.getElementById('xp').innerText = xp;
 document.getElementById('sync-code-display').innerText = syncCode;
@@ -83,18 +83,14 @@ function speakWord() {
   }
 }
 
-// Cloud Sync Functions using KVdb
+// Cloud Sync Engine via CounterAPI
 async function uploadProgress() {
   try {
-    const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${syncCode}`, {
-      method: 'POST',
-      body: xp.toString()
-    });
-
+    const response = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/code_${syncCode}/set?count=${xp}`);
     if (response.ok) {
       alert(`Progress saved to cloud under code: ${syncCode}`);
     } else {
-      alert("Failed to save. Please try again.");
+      alert("Failed to save progress. Please try again.");
     }
   } catch (error) {
     alert("Cloud save error: " + error.message);
@@ -103,12 +99,9 @@ async function uploadProgress() {
 
 async function autoSyncToCloud() {
   try {
-    await fetch(`https://kvdb.io/${KVDB_BUCKET}/${syncCode}`, {
-      method: 'POST',
-      body: xp.toString()
-    });
+    await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/code_${syncCode}/set?count=${xp}`);
   } catch (e) {
-    // Silent fail on auto-sync
+    // Silent fail on background auto-sync
   }
 }
 
@@ -121,17 +114,17 @@ async function promptSyncCode() {
 
   const cleanCode = enteredCode.trim();
   try {
-    const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${cleanCode}`);
+    const response = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/code_${cleanCode}`);
+    
     if (!response.ok) {
       alert("No cloud save found for code: " + cleanCode);
       return;
     }
 
-    const data = await response.text();
-    const fetchedXP = parseInt(data);
+    const data = await response.json();
 
-    if (!isNaN(fetchedXP)) {
-      xp = fetchedXP;
+    if (data && typeof data.count === 'number') {
+      xp = data.count;
       syncCode = cleanCode;
 
       localStorage.setItem('frenchXP', xp);
