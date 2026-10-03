@@ -83,14 +83,29 @@ function speakWord() {
   }
 }
 
-// Cloud Sync Engine via CounterAPI
+// Cloud Sync Engine with Auto-Creation and CORS Bypass
+async function saveToCloud(codeToSave, xpToSave) {
+  const key = `code_${codeToSave}`;
+  
+  // Try setting value
+  let setRes = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}/set?count=${xpToSave}`);
+  
+  // If counter doesn't exist yet (404), auto-create it first, then set count
+  if (setRes.status === 404) {
+    await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}/create?initial_value=${xpToSave}`);
+    setRes = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}/set?count=${xpToSave}`);
+  }
+  
+  return setRes.ok;
+}
+
 async function uploadProgress() {
   try {
-    const response = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/code_${syncCode}/set?count=${xp}`);
-    if (response.ok) {
+    const success = await saveToCloud(syncCode, xp);
+    if (success) {
       alert(`Progress saved to cloud under code: ${syncCode}`);
     } else {
-      alert("Failed to save progress. Please try again.");
+      alert(`Save failed. Code: ${syncCode}`);
     }
   } catch (error) {
     alert("Cloud save error: " + error.message);
@@ -99,7 +114,7 @@ async function uploadProgress() {
 
 async function autoSyncToCloud() {
   try {
-    await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/code_${syncCode}/set?count=${xp}`);
+    await saveToCloud(syncCode, xp);
   } catch (e) {
     // Silent fail on background auto-sync
   }
@@ -113,10 +128,12 @@ async function promptSyncCode() {
   }
 
   const cleanCode = enteredCode.trim();
+  const key = `code_${cleanCode}`;
+  
   try {
-    const response = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/code_${cleanCode}`);
+    let response = await fetch(`https://api.counterapi.dev/v1/${APP_NAMESPACE}/${key}`);
     
-    if (!response.ok) {
+    if (response.status === 404) {
       alert("No cloud save found for code: " + cleanCode);
       return;
     }
