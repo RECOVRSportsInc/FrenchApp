@@ -1,0 +1,8 @@
+.language-toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#word-display { overflow-wrap: anywhere; font-size: clamp(1.7rem, 4vw, 3.5rem); }
+#word-display[dir="rtl"], .btn span[dir="rtl"] { letter-spacing: normal; }
+.content-note { color: var(--muted, #52676a); font-size: .9rem; line-height: 1.5; }
+.content-note:empty { display: none; }
+@media (max-width: 680px) {
+  .language-toolbar { grid-template-columns: 1fr; }
+}
