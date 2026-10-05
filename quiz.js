@@ -15,7 +15,14 @@ function loadNextQuestion() {
   const pool = remaining.length ? remaining : words;
   const container = document.getElementById("options-container");
   const display = document.getElementById("word-display");
-  if (!pool.length || !container || !display) return;
+  if (!container || !display) return;
+  if (!pool.length) {
+    appState.currentWord = { text: "" };
+    display.textContent = "No questions available";
+    container.replaceChildren();
+    setPracticeStatus("Choose another level or practice type.");
+    return;
+  }
   const question = pool[Math.floor(Math.random() * pool.length)];
   const version = questionVersion;
   appState.currentWord = question;
@@ -40,7 +47,7 @@ function loadNextQuestion() {
     container.appendChild(button);
   }
   const size = document.getElementById("word-count");
-  if (size) size.textContent = `${words.length} ${practiceMode === "sentences" ? "sentences" : "words"}`;
+  if (size) size.textContent = `${words.length} ${practiceMode === "sentences" ? "sentences" : "words"} · ${contentLevels[practiceLevel]}`;
   renderWordProgress();
   speakWord();
 }

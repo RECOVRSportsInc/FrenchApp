@@ -10,7 +10,8 @@ function shuffleOptions(options) {
 }
 
 function getActiveWords() {
-  const rows = practiceMode === "sentences" ? sentences : vocabulary;
+  const library = practiceMode === "sentences" ? sentences : vocabulary;
+  const rows = library.filter(row => practiceLevel === "all" || levelFor(row, practiceMode) === practiceLevel);
   const translated = rows.map(row => {
     const text = translationFor(row, learningLanguage);
     const answer = translationFor(row, answerLanguage);
@@ -20,7 +21,7 @@ function getActiveWords() {
     return { id: row.id, text, answer, note: row.note || "",
       options: [answer, ...shuffleOptions(distractors).slice(0, 3)] };
   });
-  if (practiceMode === "vocabulary" && learningLanguage === "fr" && answerLanguage === "en" && typeof frenchWords !== "undefined") {
+  if (practiceLevel === "all" && practiceMode === "vocabulary" && learningLanguage === "fr" && answerLanguage === "en" && typeof frenchWords !== "undefined") {
     return [...frenchWords.map(word => ({ id: `original-fr-${encodeURIComponent(word.french.normalize("NFC").trim().toLowerCase())}`, text: word.french,
       answer: word.english, options: word.options })), ...translated];
   }

@@ -7,14 +7,14 @@
     <meta name="theme-color" content="#163b42">
     <title>Language Fast-Track</title>
 
-    <link rel="stylesheet" href="css/base.css?v=20261005-1">
-    <link rel="stylesheet" href="css/question.css?v=20261005-1">
-    <link rel="stylesheet" href="css/answers.css?v=20261005-1">
-    <link rel="stylesheet" href="css/progress.css?v=20261005-1">
-    <link rel="stylesheet" href="css/responsive.css?v=20261005-1">
-    <link rel="stylesheet" href="css/word-progress.css?v=20261005-1">
+    <link rel="stylesheet" href="css/base.css?v=20261005-2">
+    <link rel="stylesheet" href="css/question.css?v=20261005-2">
+    <link rel="stylesheet" href="css/answers.css?v=20261005-2">
+    <link rel="stylesheet" href="css/progress.css?v=20261005-2">
+    <link rel="stylesheet" href="css/responsive.css?v=20261005-2">
+    <link rel="stylesheet" href="css/word-progress.css?v=20261005-2">
 
-    <link rel="stylesheet" href="css/content.css?v=20261005-1">
+    <link rel="stylesheet" href="css/content.css?v=20261005-2">
 </head>
 
 <body>
@@ -27,7 +27,7 @@
                     <div class="brand-note">A little practice. More confidence.</div>
                 </div>
             </div>
-            <span class="practice-label">Language practice</span>
+            <span class="practice-label" id="practice-label">Language practice</span>
         </header>
 
         <div class="language-toolbar" aria-label="Language settings">
@@ -44,12 +44,19 @@
                 </select>
             </div>
             <div class="language-field">
-                <label for="practice-mode">Practice</label>
-                <select id="practice-mode">
-                    <option value="vocabulary">Vocabulary</option>
-                    <option value="sentences">Sentences</option>
+                <label for="practice-level">Level</label>
+                <select id="practice-level">
+                    <option value="all">All levels</option>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
                 </select>
             </div>
+        </div>
+
+        <div class="practice-switch" role="group" aria-label="Practice type">
+            <button id="mode-vocabulary" type="button" aria-pressed="true">Words</button>
+            <button id="mode-sentences" type="button" aria-pressed="false">Sentences</button>
         </div>
 
         <main class="layout">
@@ -142,25 +149,28 @@
         </footer>
     </div>
 
-    <script src="words.js?v=20261005-1"></script>
-    <script src="languages.js?v=20261005-1"></script>
-    <script src="data/vocabulary-food.js?v=20261005-1"></script>
-    <script src="data/vocabulary-home.js?v=20261005-1"></script>
-    <script src="data/vocabulary-everyday.js?v=20261005-1"></script>
-    <script src="data/sentences-actions.js?v=20261005-1"></script>
-    <script src="data/sentences-everyday.js?v=20261005-1"></script>
-    <script src="content-library.js?v=20261005-1"></script>
-    <script src="state.js?v=20261005-1"></script>
-    <script src="language-controls.js?v=20261005-1"></script>
-    <script src="vocabulary.js?v=20261005-1"></script>
-    <script src="word-progress.js?v=20261005-1"></script>
-    <script src="progress-ui.js?v=20261005-1"></script>
-    <script src="speech.js?v=20261005-1"></script>
-    <script src="quiz.js?v=20261005-1"></script>
-    <script src="cloud-api.js?v=20261005-1"></script>
-    <script src="sync.js?v=20261005-1"></script>
-    <script src="sync-controls.js?v=20261005-1"></script>
-    <script src="app.js?v=20261005-1"></script>
+    <script src="words.js?v=20261005-2"></script>
+    <script src="languages.js?v=20261005-2"></script>
+    <script src="data/vocabulary-food.js?v=20261005-2"></script>
+    <script src="data/vocabulary-home.js?v=20261005-2"></script>
+    <script src="data/vocabulary-everyday.js?v=20261005-2"></script>
+    <script src="data/sentences-actions.js?v=20261005-2"></script>
+    <script src="data/sentences-everyday.js?v=20261005-2"></script>
+    <script src="data/levels.js?v=20261005-2"></script>
+    <script src="data/vocabulary-hard.js?v=20261005-2"></script>
+    <script src="data/sentences-hard.js?v=20261005-2"></script>
+    <script src="content-library.js?v=20261005-2"></script>
+    <script src="state.js?v=20261005-2"></script>
+    <script src="language-controls.js?v=20261005-2"></script>
+    <script src="vocabulary.js?v=20261005-2"></script>
+    <script src="word-progress.js?v=20261005-2"></script>
+    <script src="progress-ui.js?v=20261005-2"></script>
+    <script src="speech.js?v=20261005-2"></script>
+    <script src="quiz.js?v=20261005-2"></script>
+    <script src="cloud-api.js?v=20261005-2"></script>
+    <script src="sync.js?v=20261005-2"></script>
+    <script src="sync-controls.js?v=20261005-2"></script>
+    <script src="app.js?v=20261005-2"></script>
 </body>
 
 </html>```
