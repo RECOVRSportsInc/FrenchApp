@@ -1,5 +1,5 @@
 .language-toolbar {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .practice-switch {
   display: flex;
@@ -45,4 +45,7 @@
 .content-note:empty { display: none; }
 @media (max-width: 680px) {
   .language-toolbar { grid-template-columns: 1fr; }
+}
+@media (min-width: 681px) and (max-width: 1050px) {
+  .language-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

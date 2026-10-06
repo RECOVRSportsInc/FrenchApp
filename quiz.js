@@ -20,7 +20,12 @@ function loadNextQuestion() {
     appState.currentWord = { text: "" };
     display.textContent = "No questions available";
     container.replaceChildren();
-    setPracticeStatus("Choose another level or practice type.");
+    const note = document.getElementById("content-note");
+    if (note) note.textContent = "";
+    const count = document.getElementById("word-count");
+    if (count) count.textContent = "0 questions";
+    renderWordProgress();
+    setPracticeStatus("Choose another category, level or practice type.");
     return;
   }
   const question = pool[Math.floor(Math.random() * pool.length)];
