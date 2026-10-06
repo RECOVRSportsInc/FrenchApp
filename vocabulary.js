@@ -14,41 +14,31 @@ function normalizeMeaning(value) {
 }
 
 function getActiveWords() {
-  const library = getPracticeLibrary();
-  const categoryRows = library.filter(row => practiceCategory === "all" || categoriesFor(row).includes(practiceCategory));
-  const rows = categoryRows.filter(row => practiceLevel === "all" || levelFor(row, practiceMode) === practiceLevel);
-  const seen = new Set();
-  const translated = [];
-  for (const row of rows) {
-    const text = questionTextFor(row);
-    const answer = translationFor(row, answerLanguage);
-    const key = `${normalizeMeaning(text)}:${normalizeMeaning(answer)}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const otherMeanings = new Set(library
-      .filter(other => normalizeMeaning(questionTextFor(other)) === normalizeMeaning(text))
-      .map(other => normalizeMeaning(translationFor(other, answerLanguage))));
-    // Prefer the selected category; broaden only if it cannot provide three choices.
-    const candidates = [...shuffleOptions(categoryRows), ...shuffleOptions(library)];
-    const distractors = [];
-    const used = new Set([normalizeMeaning(answer)]);
-    for (const other of candidates) {
-      const value = translationFor(other, answerLanguage);
-      const normalized = normalizeMeaning(value);
-      if (used.has(normalized) || otherMeanings.has(normalized)) continue;
-      used.add(normalized);
-      distractors.push(value);
-      if (distractors.length === 3) break;
-    }
-    translated.push({ id: row.id, text, answer, note: row.note || "",
-      options: [answer, ...distractors] });
+  const { items, meanings } = getTranslatedLibrary();
+  const key = `${practiceMode}:${learningLanguage}:${answerLanguage}:${practiceCategory}:${practiceLevel}:${items.length}`;
+  if (practicePoolCache.has(key)) return practicePoolCache.get(key);
+  const categoryItems = items.filter(item => practiceCategory === "all" || categoriesFor(item.row).includes(practiceCategory));
+  const rows = categoryItems.filter(item => practiceLevel === "all" || levelFor(item.row, practiceMode) === practiceLevel);
+  const patterns = new Map();
+  for (const item of categoryItems) {
+    if (!patterns.has(item.row.bankPattern)) patterns.set(item.row.bankPattern, []);
+    patterns.get(item.row.bankPattern).push(item);
+  }
+  const seen = new Set(), translated = [];
+  for (const item of rows) {
+    const meaningKey = `${item.source}:${item.target}`;
+    if (seen.has(meaningKey)) continue;
+    seen.add(meaningKey);
+    const distractors = chooseDistractors([patterns.get(item.row.bankPattern) || [], categoryItems, items], meanings.get(item.source), item);
+    translated.push({ id: item.row.id, text: item.text, answer: item.answer,
+      note: item.row.note || "", options: [item.answer, ...distractors] });
   }
   if (practiceCategory === "all" && practiceLevel === "all" && practiceMode === "vocabulary" &&
       learningLanguage === "fr" && answerLanguage === "en" && typeof frenchWords !== "undefined") {
-    return [...frenchWords.map(word => ({
+    translated.unshift(...frenchWords.map(word => ({
       id: `original-fr-${encodeURIComponent(word.french.normalize("NFC").trim().toLowerCase())}`,
       text: word.french, answer: word.english, options: word.options
-    })), ...translated];
+    })));
   }
-  return translated;
+  return rememberPracticePool(practicePoolCache, key, translated);
 }
