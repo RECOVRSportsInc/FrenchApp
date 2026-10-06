@@ -1,4 +1,7 @@
-function initApp() {
+async function initApp() {
+  setPracticeStatus("Loading vocabulary and sentences…");
+  await expandedBanksReady;
+  installExpandedContent();
   const syncBox = document.querySelector(".sync-box");
 
   if (syncBox && !document.getElementById("sync-status")) {
@@ -11,7 +14,7 @@ function initApp() {
   }
 
   try { loadPersistentState(); }
-  catch (error) { setSyncStatus(error.message); return; }
+  catch (error) { setPracticeStatus(error.message); setSyncStatus(error.message); return; }
   saveLocally();
   loadNextQuestion();
 
@@ -56,10 +59,16 @@ if (navigator.locks && navigator.locks.request) {
       if (status) status.textContent = "The app is open in another tab. Close that tab, then reload this one.";
       return;
     }
-    initApp();
+    await initApp();
     await new Promise(() => {});
-  }).catch(error => setSyncStatus(`Unable to start: ${error.message}`));
+  }).catch(error => {
+    setPracticeStatus(error.message);
+    setSyncStatus(`Unable to start: ${error.message}`);
+  });
 } else {
   appState.tabActive = true;
-  initApp();
+  initApp().catch(error => {
+    setPracticeStatus(error.message);
+    setSyncStatus(error.message);
+  });
 }

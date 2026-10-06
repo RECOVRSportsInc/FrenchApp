@@ -1,7 +1,7 @@
 const contentCategories = {
   all: "All categories", work: "Work", healthcare: "Healthcare",
   sports: "Sports", travel: "Travel", home: "Home",
-  gym: "Gym / workout", phrases: "Everyday phrases", slang: "Slang & casual"
+  gym: "Gym / workout", phrases: "Everyday phrases", slang: "Casual & everyday expressions"
 };
 const addedContent = [
   ...workContent.filter(row => row.level !== "easy"), ...workEasyWords, ...workEasySentences,
