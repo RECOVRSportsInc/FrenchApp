@@ -30,6 +30,7 @@ function initLanguageControls() {
 }
 
 function updateLanguageControls() {
+  updateContentControls();
   const learning = document.getElementById("learning-language");
   const answers = document.getElementById("answer-language");
   if (learning) learning.value = learningLanguage;
