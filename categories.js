@@ -4,7 +4,8 @@ const contentCategories = {
   gym: "Gym / workout", phrases: "Everyday phrases", slang: "Slang & casual"
 };
 const addedContent = [
-  ...workContent, ...healthcareContent, ...sportsContent, ...travelContent,
+  ...workContent.filter(row => row.level !== "easy"), ...workEasyWords, ...workEasySentences,
+  ...healthcareContent, ...sportsContent, ...travelContent,
   ...homeContent, ...gymContent, ...phrasesContent, ...slangContent
 ];
 const legacyCategoryIds = {
