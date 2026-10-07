@@ -1,5 +1,6 @@
 // Display history for the selected learning and answer languages.
 function renderWordProgress() {
+  if (typeof renderLearningMap === "function") renderLearningMap();
   const container = document.getElementById("word-history-body");
   if (!container) return;
   const history = readWordHistory();

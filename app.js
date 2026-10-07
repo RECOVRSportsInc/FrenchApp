@@ -2,6 +2,7 @@ async function initApp() {
   setPracticeStatus("Loading vocabulary and sentences…");
   await expandedBanksReady;
   installExpandedContent();
+  if (typeof initLearningMap === "function") initLearningMap();
   const syncBox = document.querySelector(".sync-box");
 
   if (syncBox && !document.getElementById("sync-status")) {

@@ -1,0 +1,53 @@
+body { background: #f7f9fc; --ink: #26364b; --teal: #138fbe; --line: #e4eaf0; }
+.shell { width: min(100% - 40px, 1000px); padding-bottom: 100px; }
+.masthead { padding: 18px 0 24px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+.brand-mark { background: #18a9e6; border-radius: 18px; box-shadow: 0 5px 0 #1188ba; }
+.brand-note { color: #788699; }
+.language-toolbar { background: white; padding: 18px; border: 1px solid var(--line); border-radius: 20px; }
+.practice-switch button[aria-pressed="true"] { background: #178fb9; }
+.learning-map { max-width: 640px; margin: 0 auto; }
+.map-intro { text-align: center; margin: 38px 0 34px; }
+.map-intro .eyebrow { color: #168bb4; letter-spacing: .14em; font-size: .7rem; }
+.map-intro h1 { font-size: clamp(1.7rem, 5vw, 2.35rem); letter-spacing: -.04em; margin: 10px 0; }
+.map-intro > p:last-child { color: #728093; line-height: 1.6; font-size: .95rem; }
+.topic-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 30px 34px; max-width: 510px; margin: auto; }
+.topic-node { border: 0; padding: 0; background: transparent; display: flex; align-items: center; flex-direction: column; color: var(--ink); gap: 9px; }
+.topic-ring { width: 132px; height: 132px; border-radius: 50%; padding: 8px; background: conic-gradient(#f4bd28 var(--topic-progress), #e2e7ed 0); transition: transform .18s; }
+.topic-disc { display: grid; place-items: center; height: 100%; border-radius: 50%; color: white; background: var(--topic-colour); box-shadow: inset 0 -7px 0 #00000015; border: 4px solid #f7f9fc; }
+.topic-disc svg { width: 51px; height: 51px; }
+.topic-node strong { font-size: 1.06rem; }
+.topic-caption { color: #7b899a; font-size: .76rem; }
+.topic-node:hover .topic-ring, .topic-node[aria-pressed="true"] .topic-ring { transform: translateY(-4px); }
+.topic-node[aria-pressed="true"] strong { color: #087fa7; }
+.topic-node:focus-visible { outline: 3px solid #087fa7; outline-offset: 8px; border-radius: 20px; }
+.topic-detail { grid-column: 1/-1; background: var(--topic-colour); color: #14212f; padding: 23px 26px; border-radius: 22px; box-shadow: 0 7px 0 #00000012; }
+.topic-detail h2 { margin: 0; font-size: 1.25rem; }
+.topic-detail p { font-size: .87rem; line-height: 1.5; margin: 9px 0 17px; }
+.topic-start { width: 100%; border: 0; background: white; color: #26364b; padding: 14px; border-radius: 30px; font-weight: 750; box-shadow: 0 4px 0 #00000012; }
+.topic-start:hover { background: #f4f8fb; }
+.map-footnote { text-align: center; font-size: .76rem; line-height: 1.65; color: #7a8798; max-width: 440px; margin: 32px auto; }
+.learning-nav { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 8px; background: #fffffff5; border: 1px solid var(--line); padding: 8px 12px; border-radius: 24px; box-shadow: 0 8px 35px #26364b15; }
+.learning-nav button { min-width: 96px; border: 0; border-radius: 17px; background: transparent; color: #7e8a99; padding: 8px 14px; display: grid; gap: 3px; font-weight: 650; font-size: .78rem; }
+.learning-nav button > span { font-size: 1.45rem; line-height: 1.2; }
+.learning-nav button[aria-pressed="true"] { background: #e8f7fd; color: #087ea6; }
+body[data-learning-view="learn"] .layout, body[data-learning-view="learn"] .history-panel { display: none; }
+body[data-learning-view="practice"] .learning-map, body[data-learning-view="practice"] .history-panel { display: none; }
+body[data-learning-view="progress"] .learning-map, body[data-learning-view="progress"] #practice-card { display: none; }
+body[data-learning-view="progress"] .layout { display: block; }
+body[data-learning-view="progress"] .sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 600px) {
+  .shell { width: calc(100% - 28px); padding-top: 8px; }
+  .masthead { gap: 10px; }
+  .brand-name { font-size: .95rem; }
+  .brand-note { font-size: .67rem; }
+  .practice-label { display: none; }
+  .language-toolbar { padding: 14px; }
+  .map-intro { margin-top: 26px; }
+  .topic-grid { gap: 26px 12px; }
+  .topic-ring { width: 115px; height: 115px; }
+  .topic-disc svg { width: 43px; height: 43px; }
+  .topic-node strong { font-size: .95rem; }
+  .learning-nav { bottom: 10px; }
+  body[data-learning-view="progress"] .sidebar { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .topic-ring { transition: none; } }
