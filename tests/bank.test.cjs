@@ -16,7 +16,7 @@ function walk(dir) {
     return entry.isDirectory() ? walk(file) : [file];
   });
 }
-for (const file of walk(path.join(root, 'data/banks'))) {
+for (const file of [...walk(path.join(root, 'data/banks')), ...walk(path.join(root, 'data/expressions'))]) {
   const source = fs.readFileSync(file, 'utf8');
   assert(source.split('\n').length <= 150, file);
   run(source);
@@ -27,8 +27,8 @@ sentences.push(...expandedContent.filter(row => row.mode === 'sentences'));
 let learningLanguage = 'fr', answerLanguage = 'en';`);
 const all = run('[...vocabulary, ...sentences]');
 assert.equal(new Set(all.map(row => row.id)).size, all.length, 'Duplicate IDs');
-assert.equal(run('expandedContent.length'), 4600);
-for (const row of all) for (const code of ['en', 'fr', 'pl', 'es', 'it', 'ar']) {
+assert.equal(run('expandedContent.length'), 4840);
+for (const row of all.filter(row => !row.curatedExpression)) for (const code of ['en', 'fr', 'pl', 'es', 'it', 'ar']) {
   assert(row[code] && !/[~{}]/u.test(row[code]), `${row.id}/${code}`);
 }
 let checks = 0;
@@ -42,7 +42,8 @@ for (const mode of ['vocabulary', 'sentences']) {
           if (run(`sameLanguageFamily('${learning}', '${answer}')`)) continue;
           run(`practiceMode='${mode}';practiceLevel='${level}';practiceCategory='${category}';learningLanguage='${learning}';answerLanguage='${answer}';`);
           const rows = run('getActiveWords()');
-          assert(rows.length >= 100, `${mode}/${level}/${category}/${learning}/${answer}: ${rows.length}`);
+          const curated = ['fr', 'ar'].includes(learning) && ['en', 'fr', 'ar'].includes(answer) && ['phrases', 'slang'].includes(category);
+          assert(rows.length >= (curated ? 10 : 100), `${mode}/${level}/${category}/${learning}/${answer}: ${rows.length}`);
           minimum = Math.min(minimum, rows.length);
           for (const row of rows) {
             assert.equal(row.options.length, 4);
@@ -56,4 +57,4 @@ for (const mode of ['vocabulary', 'sentences']) {
     }
   }
 }
-console.log(JSON.stringify({ checks, minimumPerBucket: 100, counts }, null, 2));
+console.log(JSON.stringify({ checks, originalBankMinimum: 100, curatedExpressionMinimum: 10, counts }, null, 2));

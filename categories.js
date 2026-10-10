@@ -1,7 +1,7 @@
 const contentCategories = {
   all: "All categories", work: "Work", healthcare: "Healthcare",
   sports: "Sports", travel: "Travel", home: "Home",
-  gym: "Gym / workout", phrases: "Everyday phrases", slang: "Casual & everyday expressions"
+  gym: "Gym / workout", phrases: "Everyday phrases", slang: "Idioms & casual expressions"
 };
 const addedContent = [
   ...workContent.filter(row => row.level !== "easy"), ...workEasyWords, ...workEasySentences,
@@ -33,7 +33,14 @@ function categoriesFor(row) {
 
 function getPracticeLibrary() {
   const rows = practiceMode === "sentences" ? sentences : vocabulary;
-  return rows.filter(row => !row.sourceLanguage || row.sourceLanguage === learningLanguage);
+  const curatedPair = ["fr", "ar"].includes(learningLanguage) && ["en", "fr", "ar"].includes(answerLanguage);
+  return rows.filter(row => {
+    if (row.sourceLanguage && row.sourceLanguage !== learningLanguage) return false;
+    if (typeof translationFor(row, answerLanguage) !== "string") return false;
+    if (curatedPair && categoriesFor(row).some(category => ["phrases", "slang"].includes(category)))
+      return Boolean(row.curatedExpression);
+    return true;
+  });
 }
 
 function questionTextFor(row) {
