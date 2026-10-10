@@ -29,7 +29,7 @@ function getActiveWords() {
     const meaningKey = `${item.source}:${item.target}`;
     if (seen.has(meaningKey)) continue;
     seen.add(meaningKey);
-    const distractors = chooseDistractors([patterns.get(item.row.bankPattern) || [], categoryItems, items], meanings.get(item.source), item);
+    const distractors = chooseDistractors([item.row.curatedExpression ? rows : patterns.get(item.row.bankPattern) || [], categoryItems, items], meanings.get(item.source), item);
     translated.push({ id: item.row.id, text: item.text, answer: item.answer,
       note: item.row.note || "", options: [item.answer, ...distractors] });
   }

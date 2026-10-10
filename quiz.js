@@ -9,6 +9,8 @@ function loadNextQuestion() {
   clearTimeout(appState.nextQuestionTimer);
   initLanguageControls();
   questionVersion++;
+  window.speechSynthesis?.cancel();
+  if (typeof practiceSession !== "undefined" && practiceSession && practiceSession.selection !== sessionSelection()) endPracticeRound();
   setPracticeStatus("");
   const words = getActiveWords();
   const remaining = words.filter(word => word.id !== appState.previousWord);
@@ -28,13 +30,15 @@ function loadNextQuestion() {
     setPracticeStatus("Choose another category, level or practice type.");
     return;
   }
-  const question = pool[Math.floor(Math.random() * pool.length)];
+  const roundQuestion = typeof nextSessionQuestion === "function" ? nextSessionQuestion(pool) : null;
+  if (roundQuestion === false) return;
+  const question = roundQuestion || pool[Math.floor(Math.random() * pool.length)];
   const version = questionVersion;
   appState.currentWord = question;
   appState.previousWord = question.id;
   display.textContent = question.text;
   const note = document.getElementById("content-note");
-  if (note) note.textContent = question.note || "";
+  if (note) note.textContent = typeof practiceSession !== "undefined" && practiceSession ? "Usage note appears after your answer." : question.note || "";
   display.lang = languageCatalog[learningLanguage].speech;
   display.dir = languageCatalog[learningLanguage].direction;
   container.replaceChildren();
@@ -54,11 +58,14 @@ function loadNextQuestion() {
   const size = document.getElementById("word-count");
   if (size) size.textContent = `${words.length} ${practiceMode === "sentences" ? "sentences" : "words"} · ${contentLevels[practiceLevel]}`;
   renderWordProgress();
-  speakWord();
+  if (typeof refreshVoiceOptions === "function") refreshVoiceOptions();
+  if (typeof speechAutoPlay === "function" && speechAutoPlay()) speakWord();
 }
 
 function checkAnswer(button, selectedOption, version = questionVersion) {
   if (!appState.tabActive || appState.switchingCode || version !== questionVersion || button.disabled) return;
+  if (typeof practiceSession !== "undefined" && practiceSession && practiceSession.answered) return;
+  if (typeof practiceSession !== "undefined" && practiceSession && practiceSession.selection !== sessionSelection()) { endPracticeRound(); loadNextQuestion(); return; }
   const previousXP = appState.xp;
   recordWordAnswer(appState.currentWord, selectedOption === appState.currentWord.answer);
   if (selectedOption === appState.currentWord.answer) {
@@ -66,12 +73,21 @@ function checkAnswer(button, selectedOption, version = questionVersion) {
     appState.xp += 10;
     document.querySelectorAll("#options-container .btn").forEach(btn => { btn.disabled = true; });
     setPracticeStatus("Correct! +10 XP");
-    appState.nextQuestionTimer = setTimeout(loadNextQuestion, 1000);
+    if (typeof practiceSession === "undefined" || !practiceSession) appState.nextQuestionTimer = setTimeout(loadNextQuestion, 1000);
   } else {
     button.classList.add("wrong");
     button.disabled = true;
     appState.xp = Math.max(0, appState.xp - 5);
     setPracticeStatus("Try another answer.");
+  }
+  if (typeof practiceSession !== "undefined" && practiceSession) {
+    const correct = selectedOption === appState.currentWord.answer;
+    answerPracticeRound(correct);
+    const note = document.getElementById("content-note");
+    if (note) note.textContent = appState.currentWord.note || "";
+    document.querySelectorAll("#options-container .btn").forEach(btn => { btn.disabled = true; });
+    if (!correct) setPracticeStatus(`The meaning is: ${appState.currentWord.answer}`);
+    appState.nextQuestionTimer = setTimeout(loadNextQuestion, correct ? 1000 : 2500);
   }
   appState.pendingXP += appState.xp - previousXP;
   saveLocally();

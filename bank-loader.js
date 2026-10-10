@@ -1,7 +1,14 @@
 // Load small, independent banks before the first question is created.
 const expandedContent = [];
-const BANK_VERSION = "20261006-3";
+const BANK_VERSION = "20261010-1";
 const expandedBankFiles = [
+  "data/expressions/phrases-easy.js",
+  "data/expressions/phrases-medium.js",
+  "data/expressions/phrases-hard.js",
+  "data/expressions/slang-easy.js",
+  "data/expressions/slang-medium.js",
+  "data/expressions/slang-hard.js",
+
   "data/banks/work/medium-vocabulary.js",
   "data/banks/work/medium-sentences.js",
   "data/banks/work/hard-vocabulary.js",

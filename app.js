@@ -17,6 +17,8 @@ async function initApp() {
   try { loadPersistentState(); }
   catch (error) { setPracticeStatus(error.message); setSyncStatus(error.message); return; }
   saveLocally();
+  if (typeof initPracticeRounds === "function") initPracticeRounds();
+  if (typeof initSpeechControls === "function") initSpeechControls();
   loadNextQuestion();
 
   document.addEventListener("visibilitychange", () => {
