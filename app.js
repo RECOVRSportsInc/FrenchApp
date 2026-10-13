@@ -16,13 +16,14 @@ async function initApp() {
   }
 
   try { loadPersistentState(); }
-  catch (error) { setPracticeStatus(error.message); setSyncStatus(error.message); return; }
+  catch (error) { throw error; }
   saveLocally();
   if (typeof initPracticeRounds === "function") initPracticeRounds();
   if (typeof initSpeechControls === "function") initSpeechControls();
   if (typeof initCourseUI === "function") initCourseUI();
   if (typeof initConversations === "function") initConversations();
   loadNextQuestion();
+  if (window.appStartup) window.appStartup.ready();
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
@@ -61,6 +62,7 @@ if (navigator.locks && navigator.locks.request) {
   navigator.locks.request(`${APP_PREFIX}_active_tab`, {ifAvailable: true}, async lock => {
     appState.tabActive = Boolean(lock);
     if (!lock) {
+      if (window.appStartup) window.appStartup.blocked();
       const status = document.getElementById("sync-status");
       if (status) status.textContent = "The app is open in another tab. Close that tab, then reload this one.";
       return;
@@ -68,12 +70,14 @@ if (navigator.locks && navigator.locks.request) {
     await initApp();
     await new Promise(() => {});
   }).catch(error => {
+    if (window.appStartup) window.appStartup.fail(error.message);
     setPracticeStatus(error.message);
     setSyncStatus(`Unable to start: ${error.message}`);
   });
 } else {
   appState.tabActive = true;
   initApp().catch(error => {
+    if (window.appStartup) window.appStartup.fail(error.message);
     setPracticeStatus(error.message);
     setSyncStatus(error.message);
   });

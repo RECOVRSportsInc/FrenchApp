@@ -12,3 +12,4 @@
 - Preserve existing XP and word history. Do not overwrite damaged progress records. Include roadmap progress and unreadable records in exported backups.
 - Keep provider credentials out of frontend JavaScript. Cloud XP does not imply cloud roadmap synchronization.
 - Run relevant curriculum, progression, loading, startup and browser checks before delivering changes. Verify both Arabic text direction and mobile layout.
+- Before committing browser-loaded changes, run node scripts/version-release.cjs with a new release ID. Keep all HTML script/style URLs, the release meta tag and the bank fallback version consistent. Do not clear learner storage to resolve startup failures.
