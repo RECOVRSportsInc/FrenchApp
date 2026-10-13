@@ -159,6 +159,9 @@ function exportProgress() {
     wordProgress: typeof getWordProgressBackup === "function"
       ? getWordProgressBackup()
       : null,
+    roadmapProgress: typeof getRoadmapBackup === "function"
+      ? getRoadmapBackup()
+      : null,
     exportedAt: new Date().toISOString()
   };
 

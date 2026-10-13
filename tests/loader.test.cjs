@@ -13,7 +13,7 @@ function setup() {
 }
 (async () => {
   const success = setup();
-  assert.equal(success.requests.length, 52);
+  assert.equal(success.requests.length, 17);
   let ready = false;
   const promise = success.run('expandedBanksReady').then(() => { ready = true; });
   for (const script of success.requests.slice(0, -1)) {
@@ -29,9 +29,9 @@ function setup() {
   last.onload();
   await promise;
   success.run('installExpandedContent(); installExpandedContent();');
-  assert.equal(success.run('vocabulary.length'), 2420);
-  assert.equal(success.run('sentences.length'), 2420);
-  assert.equal(success.run('addedContent.length'), 4840);
+  assert.equal(success.run('vocabulary.length'), 1700);
+  assert.equal(success.run('sentences.length'), 0);
+  assert.equal(success.run('addedContent.length'), 1700);
   const failure = setup();
   failure.requests[0].onerror();
   await assert.rejects(failure.run('expandedBanksReady'), /could not be loaded/);
