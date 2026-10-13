@@ -59,7 +59,7 @@ function loadNextQuestion() {
   if (size) size.textContent = `${words.length} ${practiceMode === "sentences" ? "sentences" : "words"} · ${contentLevels[practiceLevel]}`;
   renderWordProgress();
   if (typeof refreshVoiceOptions === "function") refreshVoiceOptions();
-  if (typeof speechAutoPlay === "function" && speechAutoPlay()) speakWord();
+  if (typeof speechAutoPlay === "function" && speechAutoPlay() && document.body?.dataset.learningView !== "conversations") speakWord();
 }
 
 function checkAnswer(button, selectedOption, version = questionVersion) {

@@ -11,12 +11,13 @@ const learningTopics = [
 ];
 let learningMapSelection = 'work';
 function showLearningView(view) {
+  if (typeof onConversationViewChange === 'function') onConversationViewChange(view);
   document.body.dataset.learningView = view;
   for (const button of document.querySelectorAll('[data-learning-tab]')) {
     const active = button.dataset.learningTab === view;
     button.setAttribute('aria-pressed', String(active));
   }
-  const heading = document.getElementById(view === 'learn' ? 'map-heading' : view === 'progress' ? 'history-heading-title' : 'word-display');
+  const heading = document.getElementById(view === 'conversations' ? 'conversation-heading' : view === 'learn' ? 'map-heading' : view === 'progress' ? 'history-heading-title' : 'word-display');
   if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: true }); }
 }
 function initLearningMap() {
@@ -30,7 +31,7 @@ function initLearningMap() {
   const nav = document.createElement('nav');
   nav.className = 'learning-nav';
   nav.setAttribute('aria-label', 'Main navigation');
-  for (const [view, label, symbol] of [['learn','Learn','◉'],['practice','Practice','▷'],['progress','Progress','▥']]) {
+  for (const [view, label, symbol] of [['learn','Learn','◉'],['practice','Practice','▷'],['conversations','Conversations','☏'],['progress','Progress','▥']]) {
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.learningTab = view;
