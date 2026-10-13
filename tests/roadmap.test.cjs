@@ -1,0 +1,51 @@
+const assert=require('node:assert/strict'),setup=require('./course-fixture.cjs');
+const {run,stored,context}=setup();
+function takeTest(category,tier,score){
+ assert(run(`prepareCourseSession('${category}',${tier})`));
+ const generation=run('courseSession.generation');
+ for(let i=0;i<20;i++){
+  run(`submitCourseResponse(${i<score?'courseTask(courseSession.queue[courseSession.index],courseSession.tier,courseSession.pool).answer':'"wrong"'},${generation},${i});advanceCourseSession();`);
+ }
+ assert.equal(run('courseSession.index'),20);
+}
+assert.equal(run('prepareCourseSession("sports",1)'),false,'locked tiers cannot be tested');
+takeTest('sports',0,14);
+assert.equal(run('roadmapTierUnlocked("sports",1)'),false,'14/20 does not pass');
+assert.equal(run('roadmapTopic("sports")[0].best'),14);
+takeTest('sports',0,15);
+assert.equal(run('roadmapTierUnlocked("sports",1)'),true,'15/20 passes');
+assert.equal(run('roadmapTopic("sports")[0].lessons.words'),false,'test out does not claim lesson completion');
+assert.equal(run('roadmapLessonUnlocked("sports",0,2)'),true,'skipped lessons remain reviewable');
+assert.equal(run('roadmapTierUnlocked("healthcare",1)'),false,'topics are independent');
+run('roadmapStoreCache.clear()');assert.equal(run('roadmapTierUnlocked("sports",1)'),true,'reload retains unlock');
+takeTest('sports',0,0);assert.equal(run('roadmapTierUnlocked("sports",1)'),true,'retake cannot relock an earned tier');
+takeTest('sports',1,15);takeTest('sports',2,15);
+assert.equal(run('roadmapTopic("sports").filter(t=>t.passed).length'),3);
+assert.equal(run('appState.xp'),0,'placement tests award no XP');
+run('learningLanguage="ar";');assert.equal(run('roadmapTierUnlocked("sports",1)'),false,'languages are independent');
+run('learningLanguage="fr";answerLanguage="es";');assert.equal(run('roadmapTierUnlocked("sports",1)'),false,'answer pairs are independent');
+run('answerLanguage="en";appState.syncCode="9999";');assert.equal(run('roadmapTierUnlocked("sports",1)'),false,'learner codes are independent');
+assert(run('prepareCourseSession("work",0,0)'));
+run('beginCourseQuestions();');
+const generation=run('courseSession.generation');
+for(let i=0;i<8;i++)run(`submitCourseResponse(${i<6?'courseTask(courseSession.queue[courseSession.index],courseSession.tier,courseSession.pool).answer':'"wrong"'},${generation},${i});submitCourseResponse("wrong",${generation},${i});advanceCourseSession();`);
+assert.equal(run('roadmapTopic("work")[0].lessons.words'),true,'6/8 completes a lesson');
+assert.equal(run('appState.xp'),60,'double clicks cannot award XP twice');
+assert.equal(run('roadmapLessonUnlocked("work",0,1)'),true);
+assert.equal(run('roadmapLessonUnlocked("work",0,2)'),false);
+run('prepareCourseSession("work",0,1);beginCourseQuestions();');
+const old=run('courseSession.generation');run('abandonCourseSession();prepareCourseSession("work",0,1);beginCourseQuestions();');
+run(`submitCourseResponse("wrong",${old},0);`);assert.equal(run('courseSession.responses.length'),0,'stale session callbacks are rejected');
+run('appState.syncCode="2222";advanceCourseSession();');assert.equal(run('courseSession.index'),0,'changing learners cannot commit a partial session');
+stored.set('test_roadmap_v2_2222','{"version":2,"pairs":{"fr:en":{"sports":[]}}}');
+run('roadmapStoreCache.clear();');assert.equal(run('readRoadmapStore().blocked'),true);
+assert.equal(run('getRoadmapBackup().unreadableOriginal'),'{'+'"version":2,"pairs":{"fr:en":{"sports":[]}}}');
+const failed=setup({localStorage:{getItem:()=>null,setItem(){throw new Error('Unavailable');}}});
+failed.run('prepareCourseSession("sports",0);courseSession.correct=15;courseSession.index=20;saveRoadmapResult(courseSession);');
+assert.equal(failed.run('roadmapTierUnlocked("sports",1)'),true,'storage failure retains temporary progress');
+assert(failed.run('readRoadmapStore().error').includes('only held'));
+assert.equal(failed.run('getRoadmapBackup().pairs["fr:en"].sports[0].best'),15);
+const aliases=run('getCoursePool("slang","easy","vocabulary","frCA","en").find(row=>row.frCA==="Je suis tanné.")');
+assert(aliases);run('learningLanguage="frCA";answerLanguage="en";');
+assert(run(`gradeCourseTask(courseTask(${JSON.stringify(aliases)},'hard',[]),'Je suis tannée')`));
+console.log('PASS: exact 75% boundary, test out, lesson gates, retakes, persistence, language/topic/learner isolation, XP guards and damaged-record preservation.');

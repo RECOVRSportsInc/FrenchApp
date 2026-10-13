@@ -8,7 +8,7 @@ run('const expandedContent = [];');
 const html = read('index.html');
 for (const match of html.matchAll(/<script src="([^?"]+)/g)) {
   const name = match[1];
-  if (['words.js', 'languages.js', 'categories.js', 'content-library.js', 'vocabulary.js', 'question-bank.js', 'data/levels.js'].includes(name) || name.startsWith('data/')) run(read(name));
+  if (['words.js', 'languages.js', 'categories.js', 'content-library.js', 'vocabulary.js', 'question-bank.js', 'data/levels.js', 'learning/catalog.js'].includes(name) || name.startsWith('data/')) run(read(name));
 }
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
@@ -57,4 +57,4 @@ for (const mode of ['vocabulary', 'sentences']) {
     }
   }
 }
-console.log(JSON.stringify({ checks, originalBankMinimum: 100, curatedExpressionMinimum: 10, counts }, null, 2));
+console.log(JSON.stringify({ archiveOnly: true, checks, originalBankMinimum: 100, curatedExpressionMinimum: 10, counts }, null, 2));

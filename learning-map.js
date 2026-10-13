@@ -11,14 +11,15 @@ const learningTopics = [
 ];
 let learningMapSelection = 'work';
 function showLearningView(view) {
+  if (typeof courseSession !== 'undefined' && courseSession && view !== 'lesson') abandonCourseSession();
   if (typeof onConversationViewChange === 'function') onConversationViewChange(view);
   document.body.dataset.learningView = view;
   for (const button of document.querySelectorAll('[data-learning-tab]')) {
-    const active = button.dataset.learningTab === view;
+    const active = button.dataset.learningTab === view || (view === 'lesson' && button.dataset.learningTab === 'learn');
     button.setAttribute('aria-pressed', String(active));
   }
-  const heading = document.getElementById(view === 'conversations' ? 'conversation-heading' : view === 'learn' ? 'map-heading' : view === 'progress' ? 'history-heading-title' : 'word-display');
-  if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: true }); }
+  const heading = document.getElementById(view === 'lesson' ? 'course-heading' : view === 'conversations' ? 'conversation-heading' : view === 'learn' ? 'map-heading' : view === 'progress' ? 'history-heading-title' : 'word-display');
+  if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: true }); if (view === 'lesson') heading.scrollIntoView?.({ block: 'start' }); }
 }
 function initLearningMap() {
   if (document.getElementById('learning-map')) return;
@@ -26,7 +27,7 @@ function initLearningMap() {
   section.id = 'learning-map';
   section.className = 'learning-map';
   section.setAttribute('aria-labelledby', 'map-heading');
-  section.innerHTML = '<div class="map-intro"><p class="eyebrow">YOUR LEARNING PATH</p><h1 id="map-heading">Where will you go today?</h1><p>Choose a topic. Build your confidence, one answer at a time.</p></div><div class="topic-grid" id="topic-grid"></div><p class="map-footnote">Rings show items answered correctly at least once, for your selected level and language pair. Progress is saved on this device.</p>';
+  section.innerHTML = '<div class="map-intro"><p class="eyebrow">YOUR LEARNING PATH</p><h1 id="map-heading">Your learning roadmap</h1><p>Choose a topic. Follow the road from Easy to Hard, or test out of a tier at 75%.</p></div><div class="topic-grid" id="topic-grid"></div><div id="topic-roadmap"></div><p class="map-footnote">Rings show tiers cleared. Roadmap progress is saved on this device for your learner code and language pair. Existing practice history is retained.</p>';
   document.querySelector('.layout').before(section);
   const nav = document.createElement('nav');
   nav.className = 'learning-nav';
@@ -48,58 +49,21 @@ function initLearningMap() {
 }
 function renderLearningMap() {
   const grid = document.getElementById('topic-grid');
-  if (!grid) return;
-  if (practiceCategory !== 'all') learningMapSelection = practiceCategory;
-  const history = readWordHistory().data.pairs[currentHistoryPair()] || {};
-  const rows = getPracticeLibrary().filter(row => practiceLevel === 'all' || levelFor(row, practiceMode) === practiceLevel);
-  const previousFocus = document.activeElement;
-  const focusedTopic = previousFocus && previousFocus.dataset ? previousFocus.dataset.topic : null;
+  if (!grid || !curriculumInstalled) return;
   grid.replaceChildren();
-  let detailNode = null, topicIndex = 0;
   for (const [category, colour, path] of learningTopics) {
-    const seen = new Set(), items = [];
-    for (const row of rows.filter(item => categoriesFor(item).includes(category))) {
-      const key = normalizeMeaning(questionTextFor(row)) + ':' + normalizeMeaning(translationFor(row, answerLanguage));
-      if (!seen.has(key)) { seen.add(key); items.push(row); }
-    }
-    const completed = items.filter(row => history[row.id] && history[row.id].correct > 0).length;
-    const percentage = items.length ? Math.round(completed / items.length * 100) : 0;
-    const label = category === 'slang' ? (learningLanguage === 'ar' ? 'Everyday expressions' : 'Casual expressions') : contentCategories[category];
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'topic-node';
+    const progress = roadmapTopic(category);
+    const cleared = progress.filter(tier => tier.passed).length;
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'topic-node';
     button.dataset.topic = category;
-    button.style.setProperty('--topic-colour', colour);
-    button.style.setProperty('--topic-progress', `${percentage}%`);
+    button.style.setProperty('--topic-colour', colour); button.style.setProperty('--topic-progress', `${cleared / 3 * 100}%`);
     button.setAttribute('aria-pressed', String(learningMapSelection === category));
-    button.setAttribute('aria-label', `${label}: ${completed} of ${items.length} items answered correctly. Choose topic.`);
-    button.innerHTML = `<span class="topic-ring"><span class="topic-disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg></span></span>`;
-    const title = document.createElement('strong'); title.textContent = label;
-    const progress = document.createElement('span'); progress.className = 'topic-caption'; progress.textContent = `${completed} / ${items.length} correct`;
-    button.append(title, progress);
-    button.onclick = () => { learningMapSelection = category; selectPractice(practiceMode, practiceLevel, category); renderLearningMap(); };
+    button.innerHTML = `<span class="topic-ring"><span class="topic-disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="${path}"/></svg></span></span>`;
+    const label = document.createElement('strong'); label.textContent = category === 'slang' && learningLanguage === 'ar' ? 'Expressions (MSA)' : contentCategories[category];
+    const text = document.createElement('span'); text.className = 'topic-caption'; text.textContent = `${cleared} / 3 tiers cleared`;
+    button.append(label, text);
+    button.onclick = () => { learningMapSelection = category; renderLearningMap(); document.getElementById('topic-roadmap')?.scrollIntoView({ block: 'start' }); };
     grid.appendChild(button);
-    if (learningMapSelection === category) {
-      const detail = document.createElement('div');
-      detail.className = 'topic-detail';
-      detail.style.setProperty('--topic-colour', colour);
-      const title = document.createElement('h2'); title.textContent = label;
-      const text = document.createElement('p');
-      text.textContent = `${contentLevels[practiceLevel]} · ${practiceMode === 'sentences' ? 'Sentences' : 'Vocabulary'} · ${completed} of ${items.length} answered correctly`;
-      const start = document.createElement('button'); start.className = 'topic-start'; start.type = 'button'; start.textContent = 'Start practice';
-      start.onclick = () => {
-        if (!appState.tabActive || appState.switchingCode) return;
-        selectPractice(practiceMode, practiceLevel, category);
-        showLearningView('practice');
-      };
-      detail.append(title, text, start);
-      detailNode = detail;
-    }
-    if (topicIndex % 2 === 1 && detailNode) { grid.appendChild(detailNode); detailNode = null; }
-    topicIndex++;
   }
-  if (focusedTopic) {
-    const target = [...grid.querySelectorAll('[data-topic]')].find(node => node.dataset.topic === focusedTopic);
-    if (target) target.focus({ preventScroll: true });
-  }
+  renderTopicRoadmap();
 }

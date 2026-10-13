@@ -2,6 +2,7 @@ async function initApp() {
   setPracticeStatus("Loading vocabulary and sentences…");
   await expandedBanksReady;
   installExpandedContent();
+  if (typeof installCurriculum === "function") installCurriculum();
   if (typeof initLearningMap === "function") initLearningMap();
   const syncBox = document.querySelector(".sync-box");
 
@@ -19,6 +20,7 @@ async function initApp() {
   saveLocally();
   if (typeof initPracticeRounds === "function") initPracticeRounds();
   if (typeof initSpeechControls === "function") initSpeechControls();
+  if (typeof initCourseUI === "function") initCourseUI();
   if (typeof initConversations === "function") initConversations();
   loadNextQuestion();
 

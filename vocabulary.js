@@ -30,11 +30,13 @@ function getActiveWords() {
     if (seen.has(meaningKey)) continue;
     seen.add(meaningKey);
     const distractors = chooseDistractors([item.row.curatedExpression ? rows : patterns.get(item.row.bankPattern) || [], categoryItems, items], meanings.get(item.source), item);
-    translated.push({ id: item.row.id, text: item.text, answer: item.answer,
+    const task = typeof curriculumInstalled !== 'undefined' && curriculumInstalled
+      ? courseTask(item.row, item.row.level, categoryItems.filter(value => value.row.level === item.row.level).map(value => value.row)) : null;
+    translated.push({ task, id: item.row.id, text: item.text, answer: item.answer,
       note: item.row.note || "", options: [item.answer, ...distractors] });
   }
   if (practiceCategory === "all" && practiceLevel === "all" && practiceMode === "vocabulary" &&
-      learningLanguage === "fr" && answerLanguage === "en" && typeof frenchWords !== "undefined") {
+      (typeof curriculumInstalled === "undefined" || !curriculumInstalled) && learningLanguage === "fr" && answerLanguage === "en" && typeof frenchWords !== "undefined") {
     translated.unshift(...frenchWords.map(word => ({
       id: `original-fr-${encodeURIComponent(word.french.normalize("NFC").trim().toLowerCase())}`,
       text: word.french, answer: word.english, options: word.options

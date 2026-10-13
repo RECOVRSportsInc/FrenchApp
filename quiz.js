@@ -36,30 +36,37 @@ function loadNextQuestion() {
   const version = questionVersion;
   appState.currentWord = question;
   appState.previousWord = question.id;
-  display.textContent = question.text;
-  const note = document.getElementById("content-note");
-  if (note) note.textContent = typeof practiceSession !== "undefined" && practiceSession ? "Usage note appears after your answer." : question.note || "";
-  display.lang = languageCatalog[learningLanguage].speech;
-  display.dir = languageCatalog[learningLanguage].direction;
-  container.replaceChildren();
-  container.setAttribute("aria-label", `${languageCatalog[answerLanguage].name} answer choices`);
-  for (const option of shuffleOptions(question.options)) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "btn";
-    const label = document.createElement("span");
-    label.textContent = option;
-    label.lang = languageCatalog[answerLanguage].speech;
-    label.dir = languageCatalog[answerLanguage].direction;
-    button.appendChild(label);
-    button.onclick = () => checkAnswer(button, option, version);
-    container.appendChild(button);
+  container.classList?.toggle?.('course-free-response', Boolean(question.task));
+  if (question.task) {
+    const instruction = document.getElementById('question-instruction');
+    if (instruction) instruction.textContent = question.task.kind === 'choice' ? `Choose the ${languageCatalog[question.task.responseLanguage].name} answer` : question.task.kind === 'recall' ? 'Recall the word or expression' : 'Rebuild the taught sentence';
+    display.textContent = question.task.prompt;
+    display.lang = languageCatalog[question.task.promptLanguage].speech;
+    display.dir = languageCatalog[question.task.promptLanguage].direction;
+    renderCourseTask(container, question.task, response => {
+      if (!appState.tabActive || appState.switchingCode || version !== questionVersion || question.responseRecorded || question !== appState.currentWord) return;
+      const correct = gradeCourseTask(question.task, response);
+      if (correct || (typeof practiceSession !== "undefined" && practiceSession)) question.responseRecorded = true;
+      const button = { disabled: false, classList: { add() {} } };
+      checkAnswer(button, correct ? question.answer : `Wrong response: ${response}`, version);
+    });
+  } else {
+    display.textContent = question.text;
+    display.lang = languageCatalog[learningLanguage].speech;
+    display.dir = languageCatalog[learningLanguage].direction;
+    container.replaceChildren();
+    for (const option of shuffleOptions(question.options)) {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'btn';
+      const label = document.createElement('span'); label.textContent = option; button.appendChild(label); button.onclick = () => checkAnswer(button, option, version); container.appendChild(button);
+    }
   }
+  const note = document.getElementById('content-note');
+  if (note) note.textContent = typeof practiceSession !== 'undefined' && practiceSession ? 'Usage note appears after your answer.' : question.note || '';
   const size = document.getElementById("word-count");
   if (size) size.textContent = `${words.length} ${practiceMode === "sentences" ? "sentences" : "words"} · ${contentLevels[practiceLevel]}`;
   renderWordProgress();
   if (typeof refreshVoiceOptions === "function") refreshVoiceOptions();
-  if (typeof speechAutoPlay === "function" && speechAutoPlay() && document.body?.dataset.learningView !== "conversations") speakWord();
+  if (typeof speechAutoPlay === "function" && speechAutoPlay() && (!question.task || question.task.tier === "easy") && document.body?.dataset.learningView !== "conversations") speakWord();
 }
 
 function checkAnswer(button, selectedOption, version = questionVersion) {
@@ -71,7 +78,7 @@ function checkAnswer(button, selectedOption, version = questionVersion) {
   if (selectedOption === appState.currentWord.answer) {
     button.classList.add("correct");
     appState.xp += 10;
-    document.querySelectorAll("#options-container .btn").forEach(btn => { btn.disabled = true; });
+    document.querySelectorAll("#options-container button, #options-container input").forEach(btn => { btn.disabled = true; });
     setPracticeStatus("Correct! +10 XP");
     if (typeof practiceSession === "undefined" || !practiceSession) appState.nextQuestionTimer = setTimeout(loadNextQuestion, 1000);
   } else {
@@ -85,8 +92,8 @@ function checkAnswer(button, selectedOption, version = questionVersion) {
     answerPracticeRound(correct);
     const note = document.getElementById("content-note");
     if (note) note.textContent = appState.currentWord.note || "";
-    document.querySelectorAll("#options-container .btn").forEach(btn => { btn.disabled = true; });
-    if (!correct) setPracticeStatus(`The meaning is: ${appState.currentWord.answer}`);
+    document.querySelectorAll("#options-container button, #options-container input").forEach(btn => { btn.disabled = true; });
+    if (!correct) setPracticeStatus(`Expected taught form: ${appState.currentWord.task?.answer || appState.currentWord.answer}`);
     appState.nextQuestionTimer = setTimeout(loadNextQuestion, correct ? 1000 : 2500);
   }
   appState.pendingXP += appState.xp - previousXP;

@@ -32,6 +32,8 @@ function categoriesFor(row) {
 }
 
 function getPracticeLibrary() {
+  if (typeof curriculumInstalled !== "undefined" && curriculumInstalled)
+    return courseRows.filter(row => row.mode === practiceMode && (!row.sourceLanguage || row.sourceLanguage === learningLanguage) && translationFor(row, learningLanguage) && translationFor(row, answerLanguage));
   const rows = practiceMode === "sentences" ? sentences : vocabulary;
   const curatedPair = ["fr", "ar"].includes(learningLanguage) && ["en", "fr", "ar"].includes(answerLanguage);
   return rows.filter(row => {
