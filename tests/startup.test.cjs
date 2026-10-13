@@ -16,7 +16,7 @@ function setup() {
     loadNextQuestion: () => events.push('question'),
     autoSyncToCloud() {}, syncProgress: async () => events.push('cloud'),
     REFRESH_INTERVAL: 1000, setInterval() {},
-    document: { querySelector: () => null, addEventListener() {} },
+    document: { readyState: "complete", querySelector: () => null, addEventListener() {} },
     window: { addEventListener() {} }
   });
   vm.runInContext(source, context);
