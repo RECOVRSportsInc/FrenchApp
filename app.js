@@ -1,6 +1,7 @@
 async function initApp() {
   setPracticeStatus("Loading vocabulary and sentences…");
   await expandedBanksReady;
+  if (!appState.tabActive) return;
   installExpandedContent();
   if (typeof installCurriculum === "function") installCurriculum();
   if (typeof initLearningMap === "function") initLearningMap();
@@ -57,28 +58,59 @@ async function initApp() {
   initializeFromCloud();
 }
 
-// Hold one lock for the page lifetime so another tab cannot duplicate pending XP.
-if (navigator.locks && navigator.locks.request) {
+// Acquire only after load, release before Safari suspends the outgoing page.
+let startupLeaving = false;
+let releaseStartupLock;
+let startupStarted = false;
+window.addEventListener("pagehide", () => {
+  startupLeaving = true;
+  appState.tabActive = false;
+  if (releaseStartupLock) releaseStartupLock();
+});
+window.addEventListener("pageshow", event => {
+  if (event.persisted) location.reload();
+});
+function reportStartupFailure(error) {
+  if (startupLeaving) return;
+  if (window.appStartup) window.appStartup.fail(error.message);
+  setPracticeStatus(error.message);
+  setSyncStatus(`Unable to start: ${error.message}`);
+}
+function requestStartupLock(attempt = 0) {
+  if (startupLeaving) return;
+  if (!navigator.locks || !navigator.locks.request) {
+    appState.tabActive = true;
+    initApp().catch(reportStartupFailure);
+    return;
+  }
+  let granted = false;
   navigator.locks.request(`${APP_PREFIX}_active_tab`, {ifAvailable: true}, async lock => {
-    appState.tabActive = Boolean(lock);
+    if (startupLeaving) return;
     if (!lock) {
-      if (window.appStartup) window.appStartup.blocked();
-      const status = document.getElementById("sync-status");
-      if (status) status.textContent = "The app is open in another tab. Close that tab, then reload this one.";
+      // The previous page may still be releasing its lock during a refresh.
+      if (attempt < 4) setTimeout(() => requestStartupLock(attempt + 1), 300);
+      else if (window.appStartup) window.appStartup.blocked();
       return;
     }
-    await initApp();
-    await new Promise(() => {});
+    granted = true;
+    appState.tabActive = true;
+    const lifetime = new Promise(resolve => { releaseStartupLock = resolve; });
+    try { await initApp(); }
+    catch (error) { reportStartupFailure(error); }
+    await lifetime;
   }).catch(error => {
-    if (window.appStartup) window.appStartup.fail(error.message);
-    setPracticeStatus(error.message);
-    setSyncStatus(`Unable to start: ${error.message}`);
-  });
-} else {
-  appState.tabActive = true;
-  initApp().catch(error => {
-    if (window.appStartup) window.appStartup.fail(error.message);
-    setPracticeStatus(error.message);
-    setSyncStatus(error.message);
+    if (startupLeaving) return;
+    appState.tabActive = false;
+    const transient = /browsing context|not fully active|context is invalid/i.test(error.message);
+    if (!granted && transient && attempt < 4) {
+      setTimeout(() => requestStartupLock(attempt + 1), 300);
+    } else reportStartupFailure(error);
   });
 }
+function startWhenPageIsReady() {
+  if (startupStarted || startupLeaving) return;
+  startupStarted = true;
+  requestStartupLock();
+}
+if (document.readyState === "complete") startWhenPageIsReady();
+else window.addEventListener("load", startWhenPageIsReady, {once: true});

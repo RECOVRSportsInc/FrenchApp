@@ -7,7 +7,7 @@ function setup() {
     'startup-panel', 'app-shell'].map(id => [id, { hidden: false, addEventListener() {} }]));
   const handlers = {}, timers = [];
   const context = vm.createContext({ window: { addEventListener: (name, fn) => handlers[name] = fn },
-    document: { getElementById: id => nodes[id] }, location: {reload() {}},
+    document: { readyState: "complete", getElementById: id => nodes[id] }, location: {reload() {}},
     setTimeout: fn => timers.push(fn), clearTimeout() {} });
   vm.runInContext(boot, context);
   return { nodes, handlers, timers, api: context.window.appStartup, context };
@@ -41,6 +41,10 @@ async function entry(lock, damaged) {
   env.context.document.addEventListener = () => {};
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8'), env.context);
   await new Promise(setImmediate);
+  for (let i = 0; i < 4; i++) {
+    if (env.timers[i + 1]) env.timers[i + 1]();
+    await new Promise(setImmediate);
+  }
   return { ...env, stateReads };
 }
 (async () => {
