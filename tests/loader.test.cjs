@@ -5,7 +5,7 @@ const source = fs.readFileSync(path.join(root, 'bank-loader.js'), 'utf8');
 function setup() {
   const requests = [];
   const context = vm.createContext({
-    document: { createElement: () => ({}), head: { appendChild: script => requests.push(script) } }
+    document: { querySelector: () => ({content: "release-test"}), createElement: () => ({}), head: { appendChild: script => requests.push(script) } }
   });
   vm.runInContext('const addedContent=[], vocabulary=[], sentences=[];', context);
   vm.runInContext(source, context);
@@ -14,6 +14,7 @@ function setup() {
 (async () => {
   const success = setup();
   assert.equal(success.requests.length, 17);
+  assert(success.requests.every(script => script.src.endsWith("?v=release-test")));
   let ready = false;
   const promise = success.run('expandedBanksReady').then(() => { ready = true; });
   for (const script of success.requests.slice(0, -1)) {
