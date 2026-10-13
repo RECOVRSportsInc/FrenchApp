@@ -19,6 +19,7 @@ async function initApp() {
   saveLocally();
   if (typeof initPracticeRounds === "function") initPracticeRounds();
   if (typeof initSpeechControls === "function") initSpeechControls();
+  if (typeof initConversations === "function") initConversations();
   loadNextQuestion();
 
   document.addEventListener("visibilitychange", () => {

@@ -1,0 +1,60 @@
+body[data-learning-view="conversations"] .practice-label { visibility: hidden; }
+body[data-learning-view="conversations"] .language-toolbar { grid-template-columns: 1fr; max-width: 760px; margin: auto; }
+body:not([data-learning-view="conversations"]) #conversation-page { display: none; }
+body[data-learning-view="conversations"] .learning-map,
+body[data-learning-view="conversations"] .layout,
+body[data-learning-view="conversations"] .history-panel,
+body[data-learning-view="conversations"] .quiz-filter,
+body[data-learning-view="conversations"] .practice-switch { display: none; }
+#conversation-page { max-width: 760px; margin: 28px auto; }
+.conversation-intro { text-align: center; margin-bottom: 28px; }
+.conversation-intro .eyebrow { color: #087d68; }
+.conversation-intro h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); letter-spacing: -.035em; margin: 12px 0; }
+.conversation-intro > p:last-child { color: #67768a; line-height: 1.6; }
+.conversation-card { border: 1px solid #dbe8e4; border-radius: 24px; background: #fff; overflow: hidden; box-shadow: 0 12px 40px #243e3210; padding: 24px; }
+.conversation-scene { display: flex; align-items: center; gap: 14px; background: #eef8f2; margin: -24px -24px 22px; padding: 22px 24px; }
+.conversation-avatar { flex-shrink: 0; width: 54px; height: 54px; border-radius: 18px; display: grid; place-items: center; background: #197b66; color: white; font-size: 1.5rem; font-weight: 750; box-shadow: 0 4px 0 #115c4c; }
+.conversation-scene h2 { margin: 0; font-size: 1.1rem; }
+.conversation-scene p { margin: 5px 0 0; color: #536d64; font-size: .85rem; line-height: 1.5; }
+.conversation-badge { margin-left: auto; border-radius: 20px; padding: 7px 10px; background: #fff; color: #366c5b; font-size: .75rem; white-space: nowrap; }
+.conversation-setup { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.conversation-setup label, #conversation-form label { font-weight: 650; font-size: .88rem; }
+.conversation-card button, .conversation-card select, .conversation-card input { font: inherit; border-radius: 11px; padding: 11px 14px; border: 1px solid #cad9d3; }
+.conversation-card select { min-width: 0; max-width: 100%; background: white; }
+.conversation-card button { cursor: pointer; background: #f5faf7; color: #1b614f; font-weight: 650; }
+#conversation-start, #conversation-form button, #conversation-results > button { background: #197b66; color: #fff; border-color: #197b66; }
+.conversation-card button:disabled { opacity: .5; cursor: default; }
+#conversation-description, .conversation-note { color: #67768a; font-size: .84rem; line-height: 1.65; }
+#conversation-progress { width: 100%; height: 12px; accent-color: #197b66; margin-top: 10px; }
+#conversation-goals { color: #5e7268; font-size: .8rem; }
+#conversation-log { max-height: 440px; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 14px; background: #f8faf9; border-radius: 16px; overscroll-behavior: contain; }
+.conversation-bubble { flex-shrink: 0; border-radius: 16px 16px 16px 4px; max-width: 88%; background: white; border: 1px solid #e0e9e4; padding: 12px 16px; align-self: flex-start; overflow-wrap: anywhere; }
+.conversation-bubble.learner { align-self: flex-end; background: #e5f3ed; border-color: #cce5d9; border-radius: 16px 16px 4px 16px; }
+.conversation-speaker { color: #587264; font-size: .72rem; font-weight: 750; }
+.conversation-bubble p { margin: 5px 0 0; line-height: 1.7; font-size: 1.05rem; }
+.conversation-bubble p[dir="rtl"] { font-size: 1.2rem; text-align: right; }
+.conversation-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 10px; }
+.conversation-tools button { font-size: .8rem; padding: 8px 11px; }
+#conversation-translation { padding: 12px; border-left: 3px solid #197b66; background: #edf6f2; line-height: 1.6; }
+#conversation-task { font-weight: 650; line-height: 1.6; margin-top: 20px; }
+#conversation-replies { display: grid; gap: 9px; margin: 14px 0; }
+#conversation-replies button { text-align: start; line-height: 1.6; }
+#conversation-form label { display: block; margin-bottom: 8px; }
+.conversation-input-row { display: flex; gap: 8px; }
+.conversation-input-row input { flex: 1; min-width: 0; background: white; }
+#conversation-feedback { font-size: .85rem; color: #53675f; line-height: 1.7; }
+#conversation-results { margin-top: 22px; padding: 20px; background: #eef8f2; border-radius: 16px; line-height: 1.65; }
+#conversation-results h2 { margin-top: 0; }
+#conversation-results ul { padding-left: 20px; }
+.conversation-card :focus-visible { outline: 3px solid #e8ae3e; outline-offset: 3px; }
+.learning-nav button { min-width: 70px; }
+@media (max-width: 600px) {
+  .conversation-card { padding: 18px; }
+  .conversation-scene { margin: -18px -18px 18px; padding: 18px; }
+  .conversation-badge { display: none; }
+  .conversation-setup { align-items: stretch; flex-direction: column; }
+  .conversation-input-row { flex-direction: column; }
+  .conversation-bubble { max-width: 96%; }
+  .learning-nav { width: min(380px, calc(100% - 20px)); gap: 2px; padding: 6px; }
+  .learning-nav button { flex: 1; min-width: 0; padding: 8px 3px; font-size: .7rem; }
+}
