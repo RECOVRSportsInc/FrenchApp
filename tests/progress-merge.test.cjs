@@ -1,0 +1,40 @@
+const assert = require('node:assert/strict');
+const S = require('../shared/progress-schema.js'), M = require('../shared/progress-merge.js');
+const a = 'a'.repeat(32), b = 'b'.repeat(32), c = 'c'.repeat(32);
+function row(correct = 3, mistakes = 1) { return {id: 'word-1', text: 'bonjour', answer: 'hello', correct, mistakes, lastPracticed: '2026-10-17T10:00:00.000Z'}; }
+function add(snapshot, device, correct) {
+  const previous = snapshot.history.pairs['fr:en']['word-1'];
+  const metrics = M.increment(previous, correct, device);
+  snapshot.history.pairs['fr:en']['word-1'] = {...previous, ...metrics, [correct ? 'correct' : 'mistakes']: previous[correct ? 'correct' : 'mistakes'] + 1};
+}
+const left = M.empty(a), right = M.empty(b);
+left.history.pairs['fr:en'] = {'word-1': row()}; right.history.pairs['fr:en'] = {'word-1': row()};
+add(left, a, true); add(right, b, false);
+const result = M.merge(left, right), merged = result.history.pairs['fr:en']['word-1'];
+assert.equal(merged.correct, 4); assert.equal(merged.mistakes, 2);
+assert.deepEqual(M.merge(result, left), result, 'Repeated uploads cannot duplicate answers');
+assert.deepEqual(M.merge(right, left), result, 'Merge is commutative');
+const third = M.empty(c); third.history.pairs['fr:en'] = {'word-1': row(5, 2)};
+assert.deepEqual(M.merge(M.merge(left, right), third), M.merge(left, M.merge(right, third)), 'Merge is associative');
+assert.equal(M.merge(result, third).history.pairs['fr:en']['word-1'].correct, 6, 'Legacy baseline uses max, new device answers remain additive');
+const tiers = [0, 1, 2].map(() => ({best: 0, passed: false, lessons: {words: false, sentences: false, mixed: false}}));
+left.roadmap.pairs['fr:en'] = {sports: structuredClone(tiers)};
+left.roadmap.pairs['fr:en'].sports[0] = {best: 15, passed: true, lessons: {words: false, sentences: false, mixed: false}};
+right.roadmap.pairs['fr:en'] = {sports: structuredClone(tiers)};
+right.roadmap.pairs['fr:en'].sports[0].lessons.words = true;
+assert.equal(M.merge(left, right).roadmap.pairs['fr:en'].sports[0].passed, true);
+assert.equal(M.merge(left, right).roadmap.pairs['fr:en'].sports[0].lessons.words, true);
+right.roadmap.pairs['ar:en'] = {sports: structuredClone(tiers)};
+assert.equal(M.merge(left, right).roadmap.pairs['ar:en'].sports[0].passed, false);
+const bad = structuredClone(left); bad.roadmap.pairs['fr:en'].sports[2].passed = true;
+assert.throws(() => S.snapshot(bad));
+const poisoned = JSON.parse('{"version":1,"roadmap":{"version":2,"pairs":{"__proto__":{}}}}');
+assert.throws(() => S.snapshot(poisoned)); assert.equal({}.polluted, undefined);
+const day = {visits: {[a]: true}, sessions: {[a]: {kind: 'lesson', answers: 8, correct: 5, pair: 'fr:en', at: '2026-10-17T10:00:00Z', goal: 1}}};
+left.activity.days['2026-10-17'] = day;
+const repeated = M.merge(left, M.merge(left, right));
+assert.equal(Object.keys(repeated.activity.days['2026-10-17'].sessions).length, 1);
+assert.throws(() => S.date('2026-02-30'));
+const corrupt = row(); corrupt._devices = {[a]: {correct: 1, mistakes: 0}};
+assert.throws(() => S.metrics(corrupt));
+console.log('PASS: concurrent offline answers, idempotent/commutative/associative merge, legacy baselines, tier safety, language isolation and hostile records.');

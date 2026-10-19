@@ -18,7 +18,7 @@ function showLearningView(view) {
     const active = button.dataset.learningTab === view || (view === 'lesson' && button.dataset.learningTab === 'learn');
     button.setAttribute('aria-pressed', String(active));
   }
-  const heading = document.getElementById(view === 'lesson' ? 'course-heading' : view === 'conversations' ? 'conversation-heading' : view === 'learn' ? 'map-heading' : view === 'progress' ? 'history-heading-title' : 'word-display');
+  const heading = document.getElementById(view === 'today' ? 'today-heading' : view === 'lesson' ? 'course-heading' : view === 'conversations' ? 'conversation-heading' : view === 'learn' ? 'map-heading' : view === 'progress' ? 'history-heading-title' : 'word-display');
   if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: true }); if (view === 'lesson') heading.scrollIntoView?.({ block: 'start' }); }
 }
 function initLearningMap() {

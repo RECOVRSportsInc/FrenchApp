@@ -13,3 +13,8 @@
 - Keep provider credentials out of frontend JavaScript. Cloud XP does not imply cloud roadmap synchronization.
 - Run relevant curriculum, progression, loading, startup and browser checks before delivering changes. Verify both Arabic text direction and mobile layout.
 - Before committing browser-loaded changes, run node scripts/version-release.cjs with a new release ID. Keep all HTML script/style URLs, the release meta tag and the bank fallback version consistent. Do not clear learner storage to resolve startup failures.
+- Daily visits do not earn streaks. Completed lessons, tier tests, rounds and conversations each earn one session, even when the pass threshold is missed. Never backfill activity from XP or fabricate past streaks.
+- Keep completed-session IDs immutable and retain their recorded local dates. Scope activity to learner code; daily goals span learning languages.
+- Learning cloud sync uses private capability keys, revision checks and monotonic merges. Four-digit XP codes alone do not authenticate learning records. Preserve legacy baselines and per-device counters when modifying word history.
+- Keep the recovery journal until every local import write succeeds. Preserve damaged originals for backup and never replace unreadable records silently.
+- Learning cloud activation requires a deployed backend and a configured public endpoint. Keep local-only status honest. Run daily, progress-merge, progress-sync, progress-api and backup checks when changing these modules.

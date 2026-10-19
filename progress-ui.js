@@ -1,5 +1,6 @@
 // Display history for the selected learning and answer languages.
 function renderWordProgress() {
+  if (typeof renderToday === "function") renderToday();
   if (typeof refreshRoadmapContext === "function") refreshRoadmapContext();
   if (typeof renderConversationLanding === "function") renderConversationLanding();
   if (typeof renderLearningMap === "function") renderLearningMap();

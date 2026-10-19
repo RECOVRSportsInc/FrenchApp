@@ -149,33 +149,4 @@ function saveLocally() {
   }
 }
 
-function exportProgress() {
-  const backup = {
-    version: 2,
-    code: appState.syncCode,
-    xp: appState.xp,
-    pendingXP: appState.pendingXP,
-    writeIntent: appState.writeIntent,
-    wordProgress: typeof getWordProgressBackup === "function"
-      ? getWordProgressBackup()
-      : null,
-    roadmapProgress: typeof getRoadmapBackup === "function"
-      ? getRoadmapBackup()
-      : null,
-    exportedAt: new Date().toISOString()
-  };
-
-  const blob = new Blob(
-    [JSON.stringify(backup, null, 2)],
-    { type: "application/json" }
-  );
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = `language-progress-${appState.syncCode}.json`;
-  link.click();
-
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+function exportProgress() { downloadLearningBackup(); }

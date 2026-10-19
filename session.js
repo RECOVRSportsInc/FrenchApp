@@ -10,7 +10,7 @@ function startPracticeRound(retry = false) {
     ? practiceSession.missed : getActiveWords();
   const queue = shuffleOptions(pool).slice(0, 10);
   if (!queue.length) { setPracticeStatus('No questions available for this selection.'); return; }
-  practiceSession = { selection, queue, index: 0, correct: 0, missed: [], streak: 0, bestStreak: 0, answered: false, retry };
+  practiceSession = { activityId: typeof learningSessionId === "function" ? learningSessionId() : null, owner: appState.syncCode, pair: `${learningLanguage}:${answerLanguage}`, selection, queue, index: 0, correct: 0, missed: [], streak: 0, bestStreak: 0, answered: false, retry };
   if (typeof showLearningView === 'function') showLearningView('practice');
   loadNextQuestion();
 }
@@ -46,6 +46,8 @@ function endPracticeRound() {
   renderPracticeRound();
 }
 function finishPracticeRound() {
+  if (typeof recordLearningCompletion === 'function') recordLearningCompletion(practiceSession.activityId,
+    'round', practiceSession.queue.length, practiceSession.correct, practiceSession.owner, practiceSession.pair);
   appState.currentWord = { text: '' };
   window.speechSynthesis?.cancel();
   document.getElementById('word-display').textContent = 'Round complete!';
