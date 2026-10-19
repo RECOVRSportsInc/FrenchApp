@@ -102,8 +102,14 @@ function recordWordAnswer(word, correct) {
 
   if (!Number.isSafeInteger(count)) return false;
 
+  let metrics = {};
+  if (typeof learningHistoryIncrement === "function") {
+    try { metrics = learningHistoryIncrement(row, correct); }
+    catch (error) { history.error = error.message; return false; }
+  }
   pair[word.id] = {
     ...row,
+    ...metrics,
     id: word.id,
     text: word.text,
     answer: word.answer,

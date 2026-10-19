@@ -1,6 +1,6 @@
 // Load small, independent banks before the first question is created.
 const expandedContent = [];
-const BANK_VERSION = document.querySelector('meta[name="app-release"]')?.content || "20261013-3";
+const BANK_VERSION = document.querySelector('meta[name="app-release"]')?.content || "20261019-1";
 const expandedBankFiles = [
   "data/banks/work/medium-vocabulary.js",
   "data/banks/work/hard-vocabulary.js",

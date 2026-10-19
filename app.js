@@ -18,12 +18,14 @@ async function initApp() {
 
   try { loadPersistentState(); }
   catch (error) { throw error; }
+  if (typeof restoreLearningJournal === "function") restoreLearningJournal();
   saveLocally();
   if (typeof initPracticeRounds === "function") initPracticeRounds();
   if (typeof initSpeechControls === "function") initSpeechControls();
   if (typeof initCourseUI === "function") initCourseUI();
   if (typeof initConversations === "function") initConversations();
   loadNextQuestion();
+  if (typeof initToday === "function") initToday();
   if (window.appStartup) window.appStartup.ready();
 
   document.addEventListener("visibilitychange", () => {

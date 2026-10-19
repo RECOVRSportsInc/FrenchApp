@@ -21,7 +21,7 @@ function groceryLine(node = groceryConversation.node) {
 }
 function startGroceryConversation(language = learningLanguage, level = 'easy') {
   if (!['fr', 'ar'].includes(language) || !['easy', 'medium', 'hard'].includes(level)) return false;
-  groceryConversation = { language, level, node: 'welcome', transcript: [], turns: 0, independent: 0,
+  groceryConversation = { activityId: typeof learningSessionId === 'function' ? learningSessionId() : null, answers: typeof answerLanguage === 'string' ? answerLanguage : 'en', language, level, node: 'welcome', transcript: [], turns: 0, independent: 0,
     hints: 0, translations: 0, retries: 0, assisted: false, fruit: '', quantity: 0, milk: false,
     milkType: '', payment: '', bag: '', complete: false, owner: appState.syncCode };
   appendGroceryCharacter();
@@ -74,7 +74,12 @@ function advanceGroceryConversation(choiceId, typedText = '') {
       : ['Merci, voici votre monnaie.', 'شكرًا، تفضل الباقي.', 'Thank you, here’s your change.'] });
     state.node = 'bag';
   } else if (previous === 'bag') { state.bag = choiceId; state.node = 'goodbye'; }
-  else if (previous === 'goodbye') { state.complete = true; return true; }
+  else if (previous === 'goodbye') {
+    state.complete = true;
+    if (typeof recordLearningCompletion === 'function') recordLearningCompletion(state.activityId,
+      'conversation', state.turns, state.independent, state.owner, `${state.language}:${state.answers}`);
+    return true;
+  }
   appendGroceryCharacter();
   return true;
 }

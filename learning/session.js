@@ -23,7 +23,7 @@ function prepareCourseSession(category, tierIndex, lessonIndex = null) {
     : shuffleOptions([...words.slice(0, 4), ...sentences.slice(0, 4)]);
   if (!queue.length) return false;
   window.speechSynthesis?.cancel(); endPracticeRound();
-  courseSession = { category, tierIndex, lessonIndex, test, tier, pool, queue, tasks: queue.map(row => courseTask(row, tier, pool)), index: 0, correct: 0,
+  courseSession = { activityId: typeof learningSessionId === "function" ? learningSessionId() : null, category, tierIndex, lessonIndex, test, tier, pool, queue, tasks: queue.map(row => courseTask(row, tier, pool)), index: 0, correct: 0,
     owner: appState.syncCode, learning: learningLanguage, answers: answerLanguage, answered: false,
     responses: [], saved: false, studying: !test, generation: ++courseGeneration };
   showLearningView('lesson'); renderCourseSession(); return true;
@@ -48,7 +48,12 @@ function advanceCourseSession() {
   if (!courseSessionCurrent() || !courseSession.answered) return;
   courseSession.index++;
   courseSession.answered = false;
-  if (courseSession.index === courseSession.queue.length) saveRoadmapResult(courseSession);
+  if (courseSession.index === courseSession.queue.length) {
+    saveRoadmapResult(courseSession);
+    if (typeof recordLearningCompletion === 'function') recordLearningCompletion(courseSession.activityId,
+      courseSession.test ? 'test' : 'lesson', courseSession.queue.length, courseSession.correct,
+      courseSession.owner, `${courseSession.learning}:${courseSession.answers}`);
+  }
   renderCourseSession();
 }
 function abandonCourseSession() { courseSession = null; window.speechSynthesis?.cancel(); }
